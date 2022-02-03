@@ -1,5 +1,5 @@
 # Arguments-enhanced IR
-![version](https://img.shields.io/badge/version-0.1.0-blue)
+![version](https://img.shields.io/badge/version-0.2.0-blue)
 ![last-update](https://img.shields.io/badge/last_update-2/3/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 

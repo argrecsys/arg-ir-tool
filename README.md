@@ -3,12 +3,12 @@
 ![last-update](https://img.shields.io/badge/last_update-2/3/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
-Argument-enhanced information retrieval repository. A use case in the Decide Madrid database.
+Argument-enhanced information retrieval repository. A case study in the Decide Madrid database.
 
 ## Dependencies
 The implemented solutions depend on or make use of the following libraries and .jar files:
 - JDK 16
-- <a href="https://lucene.apache.org/" target="_blank">Apache Lucene</a>
+- <a href="https://lucene.apache.org/" target="_blank">Apache Lucene</a> 9.0
 - MySQL Connector 8.0.22
 - MongoDB Java Driver 3.4.3
 - Snake YAML 1.9

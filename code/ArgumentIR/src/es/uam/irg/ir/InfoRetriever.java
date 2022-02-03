@@ -22,7 +22,9 @@ import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.utils.FunctionUtils;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,8 +89,7 @@ public class InfoRetriever {
                 for (Map.Entry<Integer, DMProposal> entry : proposals.entrySet()) {
                     proposalId = entry.getKey().toString();
                     proposal = entry.getValue();
-
-                    addDoc(w, proposalId, proposal.getTitle(), proposal.getSummary());
+                    addDocToIndex(w, proposalId, proposal.getTitle(), proposal.getSummary());
                 }
             }
 
@@ -96,15 +97,6 @@ public class InfoRetriever {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getWrongQueryMessage() {
-        String errorMsg = "<div><h2>You must enter a valid query.</h2></div>";
-        return errorMsg;
     }
 
     /**
@@ -118,13 +110,7 @@ public class InfoRetriever {
         try {
             DMDBManager dbManager = null;
             if (msqlSetup != null && msqlSetup.size() == 4) {
-                String dbServer = msqlSetup.get("db_server").toString();
-                String dbName = msqlSetup.get("db_name").toString();
-                String dbUserName = msqlSetup.get("db_user_name").toString();
-                String dbUserPwd = msqlSetup.get("db_user_pw").toString();
-                
-                dbManager = new DMDBManager(dbServer, dbName, dbUserName, dbUserPwd);
-
+                dbManager = new DMDBManager(msqlSetup);
             } else {
                 dbManager = new DMDBManager();
             }
@@ -151,11 +137,11 @@ public class InfoRetriever {
      *
      * @param querystr
      * @param hitsPerPage
-     * @param wArgs
+     * @param reRankBy
      * @return
      */
-    public String queryData(String querystr, int hitsPerPage, boolean wArgs) {
-        String result = "";
+    public List<DMProposal> queryData(String querystr, int hitsPerPage, String reRankBy) {
+        List<DMProposal> propList = new ArrayList<>();
 
         try {
             // The "title" arg specifies the default field to use when no field is explicitly specified in the query
@@ -172,7 +158,8 @@ public class InfoRetriever {
             for (int i = 0; i < hits.length; ++i) {
                 int docId = hits[i].doc;
                 Document d = searcher.doc(docId);
-                System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("title") + "\t" + d.get("summary"));
+                int proposalId = Integer.parseInt(d.get("id"));
+                propList.add(proposals.get(proposalId));
             }
 
             // Reader can only be closed when there is no need to access the documents any more.
@@ -181,8 +168,8 @@ public class InfoRetriever {
         } catch (ParseException | IOException ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        return result;
+        
+        return propList;
     }
 
     /**
@@ -194,7 +181,7 @@ public class InfoRetriever {
      * @param summary
      * @throws IOException
      */
-    private void addDoc(IndexWriter w, String proposalId, String title, String summary) throws IOException {
+    private void addDocToIndex(IndexWriter w, String proposalId, String title, String summary) throws IOException {
         Document doc = new Document();
         doc.add(new StringField("id", proposalId, Field.Store.YES));
         doc.add(new TextField("title", title, Field.Store.YES));

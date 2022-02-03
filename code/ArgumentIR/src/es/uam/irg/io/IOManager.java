@@ -17,10 +17,16 @@
  */
 package es.uam.irg.io;
 
+import es.uam.irg.utils.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,6 +61,52 @@ public class IOManager {
         }
 
         return data;
+    }
+
+    /**
+     *
+     * @param folderPath
+     * @return
+     */
+    public static Map<String, String> readHtmlReports(String folderPath) {
+        Map<String, String> reports = null;
+
+        if (!StringUtils.isEmpty(folderPath)) {
+            reports = new HashMap<>();
+            File folder = new File(folderPath);
+            Path filepath;
+            String filename;
+            String content;
+
+            for (File fileEntry : folder.listFiles()) {
+                if (fileEntry.isFile()) {
+                    try {
+                        filepath = Paths.get(fileEntry.getPath());
+                        filename = getNameWithoutExt(fileEntry.getName()).replace("-", "_").toUpperCase();
+                        content = Files.readString(filepath, StandardCharsets.US_ASCII);
+                        reports.put(filename, content);
+
+                    } catch (IOException ex) {
+                        Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+
+        return reports;
+    }
+
+    /**
+     *
+     * @param filename
+     * @return
+     */
+    private static String getNameWithoutExt(String filename) {
+        int index = filename.lastIndexOf(".");
+        if (index == -1) {
+            return filename;
+        }
+        return filename.substring(0, index);
     }
 
 }

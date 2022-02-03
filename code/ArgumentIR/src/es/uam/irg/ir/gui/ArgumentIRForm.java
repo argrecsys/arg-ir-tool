@@ -17,7 +17,11 @@
  */
 package es.uam.irg.ir.gui;
 
+import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.ir.InfoRetriever;
+import java.text.DecimalFormat;
+import java.util.List;
+import javax.swing.text.html.HTMLEditorKit;
 
 /**
  *
@@ -27,15 +31,22 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public static final String HTML_CONTENT_TYPE = "text/html";
 
     private final InfoRetriever retriever;
+    private final ReportFormatter formatter;
+    private final HTMLEditorKit kit;
+    private final DecimalFormat df;
 
     /**
      * Creates new form ArgumentIRForm
      */
     public ArgumentIRForm() {
         initComponents();
-        //this.setExtendedState(MAXIMIZED_BOTH);
+
+        this.kit = new HTMLEditorKit();
+        this.txtResult.setEditorKit(kit);
         this.txtResult.setContentType(HTML_CONTENT_TYPE);
         this.retriever = new InfoRetriever();
+        this.formatter = new ReportFormatter();
+        this.df = new DecimalFormat("0.000");
     }
 
     /**
@@ -68,8 +79,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         txtResult = new javax.swing.JTextPane();
         lblTop = new javax.swing.JLabel();
         cmbTop = new javax.swing.JComboBox<>();
-        lblCheckArg = new javax.swing.JLabel();
-        ckbArguments = new javax.swing.JCheckBox();
+        lblRerankBy = new javax.swing.JLabel();
+        cmbReranks = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Argument-enhanced Information Retrieval");
@@ -88,15 +99,16 @@ public class ArgumentIRForm extends javax.swing.JFrame {
             }
         });
 
+        txtResult.setEditable(false);
         jScrollPane2.setViewportView(txtResult);
 
         lblTop.setText("Top:");
 
         cmbTop.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "10", "25", "50", "100" }));
 
-        lblCheckArg.setText("With:");
+        lblRerankBy.setText("Rerank by:");
 
-        ckbArguments.setText("arguments");
+        cmbReranks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Arguments", "Controversy" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -114,10 +126,10 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(cmbTop, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(30, 30, 30)
-                                .addComponent(lblCheckArg)
+                                .addComponent(lblRerankBy)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(ckbArguments)
-                                .addGap(277, 277, 277))
+                                .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(200, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(txtQuery)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -139,9 +151,9 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblTop)
                     .addComponent(cmbTop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblCheckArg)
-                    .addComponent(ckbArguments))
-                .addGap(18, 18, 18)
+                    .addComponent(lblRerankBy)
+                    .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
                 .addGap(20, 20, 20))
         );
@@ -154,24 +166,44 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         // TODO add your handling code here:
         String query = this.txtQuery.getText();
         int nTop = Integer.parseInt(this.cmbTop.getSelectedItem().toString());
-        boolean wArgs = this.ckbArguments.isSelected();
+        String reRankBy = this.cmbReranks.getSelectedItem().toString();
         String result = "";
 
         if (query.isEmpty()) {
-            result = this.retriever.getWrongQueryMessage();
+            result = this.formatter.getNoValidQueryReport();
         } else {
-            result = this.retriever.queryData(query, nTop, wArgs);
+            int nReports = 0;
+            double timeElapsed = 0.0;
+            StringBuilder body = new StringBuilder();
+
+            // Query data
+            long start = System.nanoTime();
+            List<DMProposal> propList = this.retriever.queryData(query, nTop, reRankBy);
+            long finish = System.nanoTime();
+            timeElapsed = (finish - start) / 1000000000;
+            nReports = propList.size();
+
+            // Format data
+            for (DMProposal proposal : propList) {
+                body.append(this.formatter.getProposalInfoReport(proposal));
+            }
+            result = this.formatter.getProposalListReport();
+            result = result.replace("$N_REPORTS$", "" + nReports);
+            result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
+            result = result.replace("$CONTENT$", body.toString());
         }
+        
+        // Display report
         this.txtResult.setText(result);
     }//GEN-LAST:event_btnSearchActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
-    private javax.swing.JCheckBox ckbArguments;
+    private javax.swing.JComboBox<String> cmbReranks;
     private javax.swing.JComboBox<String> cmbTop;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JLabel lblCheckArg;
     private javax.swing.JLabel lblQuery;
+    private javax.swing.JLabel lblRerankBy;
     private javax.swing.JLabel lblTop;
     private javax.swing.JTextField txtQuery;
     private javax.swing.JTextPane txtResult;

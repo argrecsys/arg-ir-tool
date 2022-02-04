@@ -145,7 +145,7 @@ public class InfoRetriever {
 
         try {
             // The "title" arg specifies the default field to use when no field is explicitly specified in the query
-            Query q = new QueryParser("title", analyzer).parse(querystr);
+            Query q = new QueryParser("summary", analyzer).parse(querystr);
 
             // 3. search
             IndexReader reader = DirectoryReader.open(index);
@@ -168,7 +168,7 @@ public class InfoRetriever {
         } catch (ParseException | IOException ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return propList;
     }
 

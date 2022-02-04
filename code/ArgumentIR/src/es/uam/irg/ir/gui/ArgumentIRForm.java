@@ -27,9 +27,9 @@ import javax.swing.text.html.HTMLEditorKit;
  *
  */
 public class ArgumentIRForm extends javax.swing.JFrame {
-
+    
     public static final String HTML_CONTENT_TYPE = "text/html";
-
+    
     private final InfoRetriever retriever;
     private final ReportFormatter formatter;
     private final HTMLEditorKit kit;
@@ -40,7 +40,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     public ArgumentIRForm() {
         initComponents();
-
+        
         this.kit = new HTMLEditorKit();
         this.txtResult.setEditorKit(kit);
         this.txtResult.setContentType(HTML_CONTENT_TYPE);
@@ -104,11 +104,11 @@ public class ArgumentIRForm extends javax.swing.JFrame {
 
         lblTop.setText("Top:");
 
-        cmbTop.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "10", "25", "50", "100" }));
+        cmbTop.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "25", "50", "100", "All" }));
 
         lblRerankBy.setText("Rerank by:");
 
-        cmbReranks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Arguments", "Controversy" }));
+        cmbReranks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nothing", "Arguments", "Controversy" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -165,12 +165,43 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // TODO add your handling code here:
         String query = this.txtQuery.getText();
-        int nTop = Integer.parseInt(this.cmbTop.getSelectedItem().toString());
+        String nTopOption = this.cmbTop.getSelectedItem().toString();
+        int nTop = (nTopOption.equals("All") ? Integer.MAX_VALUE : Integer.parseInt(nTopOption));
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
-        String result = "";
 
+        // Query data
+        String result = queryData(query, nTop, reRankBy);
+
+        // Display report
+        this.txtResult.setText(result);
+        this.txtResult.setCaretPosition(0);
+    }//GEN-LAST:event_btnSearchActionPerformed
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnSearch;
+    private javax.swing.JComboBox<String> cmbReranks;
+    private javax.swing.JComboBox<String> cmbTop;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblQuery;
+    private javax.swing.JLabel lblRerankBy;
+    private javax.swing.JLabel lblTop;
+    private javax.swing.JTextField txtQuery;
+    private javax.swing.JTextPane txtResult;
+    // End of variables declaration//GEN-END:variables
+
+    /**
+     *
+     * @param query
+     * @param nTop
+     * @param reRankBy
+     * @return
+     */
+    private String queryData(String query, int nTop, String reRankBy) {
+        String result = "";
+        
         if (query.isEmpty()) {
             result = this.formatter.getNoValidQueryReport();
+            
         } else {
             int nReports = 0;
             double timeElapsed = 0.0;
@@ -187,25 +218,14 @@ public class ArgumentIRForm extends javax.swing.JFrame {
             for (DMProposal proposal : propList) {
                 body.append(this.formatter.getProposalInfoReport(proposal));
             }
+            
             result = this.formatter.getProposalListReport();
             result = result.replace("$N_REPORTS$", "" + nReports);
             result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
             result = result.replace("$CONTENT$", body.toString());
         }
         
-        // Display report
-        this.txtResult.setText(result);
-    }//GEN-LAST:event_btnSearchActionPerformed
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnSearch;
-    private javax.swing.JComboBox<String> cmbReranks;
-    private javax.swing.JComboBox<String> cmbTop;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JLabel lblQuery;
-    private javax.swing.JLabel lblRerankBy;
-    private javax.swing.JLabel lblTop;
-    private javax.swing.JTextField txtQuery;
-    private javax.swing.JTextPane txtResult;
-    // End of variables declaration//GEN-END:variables
+        return result;
+    }
+    
 }

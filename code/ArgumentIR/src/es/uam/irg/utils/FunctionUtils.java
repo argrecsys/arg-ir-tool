@@ -27,16 +27,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- * @author ansegura
+ * Class with a set of static utility functions.
  */
 public class FunctionUtils {
 
     // Class constants
     public static final String MONGO_DB = "MONGO_DB";
     public static final String MYSQL_DB = "MYSQL_DB";
-    private static final String MSQL_SETUP_FILEPATH = "Resources/config/msql_setup.yaml";
     private static final String MDB_SETUP_FILEPATH = "Resources/config/mdb_setup.yaml";
+    private static final String MSQL_SETUP_FILEPATH = "Resources/config/msql_setup.yaml";
 
     /**
      *
@@ -86,6 +85,19 @@ public class FunctionUtils {
         }
 
         return setup;
+    }
+    
+    /**
+     *
+     * @param filename
+     * @return
+     */
+    public static String getFilenameWithoutExt(String filename) {
+        int index = filename.lastIndexOf(".");
+        if (index == -1) {
+            return filename;
+        }
+        return filename.substring(0, index);
     }
 
     /**

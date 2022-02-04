@@ -95,7 +95,7 @@ public class IOManager {
      * @return
      */
     private static String getFileName(String filename) {
-        filename = FunctionUtils.getNameWithoutExt(filename);
+        filename = FunctionUtils.getFilenameWithoutExt(filename);
         return filename.replace("-", "_").toUpperCase();
     }
 

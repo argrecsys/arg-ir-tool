@@ -92,7 +92,7 @@ public class FunctionUtils {
      * @param filename
      * @return
      */
-    public static String getNameWithoutExt(String filename) {
+    public static String getFilenameWithoutExt(String filename) {
         int index = filename.lastIndexOf(".");
         if (index == -1) {
             return filename;

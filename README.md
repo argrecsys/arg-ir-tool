@@ -5,6 +5,9 @@
 
 Argument-enhanced information retrieval repository. A case study in the Decide Madrid database.
 
+## Screenshots
+![arg-ir-gui](https://raw.githubusercontent.com/ansegura7/arg-enhanced-ir/main/images/gui.gif)
+
 ## Dependencies
 The implemented solutions depend on or make use of the following libraries and .jar files:
 - JDK 16

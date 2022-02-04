@@ -17,6 +17,7 @@
  */
 package es.uam.irg.io;
 
+import es.uam.irg.utils.FunctionUtils;
 import es.uam.irg.utils.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +37,31 @@ import org.yaml.snakeyaml.Yaml;
  * Input-output manager class.
  */
 public class IOManager {
+
+    /**
+     *
+     * @param folderPath
+     * @return
+     */
+    public static Map<String, String> readHtmlReports(String folderPath) {
+        Map<String, String> reports = null;
+
+        if (!StringUtils.isEmpty(folderPath)) {
+            reports = new HashMap<>();
+            File folder = new File(folderPath);
+
+            for (File fileEntry : folder.listFiles()) {
+                if (fileEntry.isFile()) {
+                    Path filepath = Paths.get(fileEntry.getPath());
+                    String filename = getFileName(fileEntry.getName());
+                    String content = readFile(filepath);
+                    reports.put(filename, content);
+                }
+            }
+        }
+
+        return reports;
+    }
 
     /**
      *
@@ -65,48 +91,27 @@ public class IOManager {
 
     /**
      *
-     * @param folderPath
+     * @param filename
      * @return
      */
-    public static Map<String, String> readHtmlReports(String folderPath) {
-        Map<String, String> reports = null;
-
-        if (!StringUtils.isEmpty(folderPath)) {
-            reports = new HashMap<>();
-            File folder = new File(folderPath);
-            Path filepath;
-            String filename;
-            String content;
-
-            for (File fileEntry : folder.listFiles()) {
-                if (fileEntry.isFile()) {
-                    try {
-                        filepath = Paths.get(fileEntry.getPath());
-                        filename = getNameWithoutExt(fileEntry.getName()).replace("-", "_").toUpperCase();
-                        content = Files.readString(filepath, StandardCharsets.US_ASCII);
-                        reports.put(filename, content);
-
-                    } catch (IOException ex) {
-                        Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        }
-
-        return reports;
+    private static String getFileName(String filename) {
+        filename = FunctionUtils.getNameWithoutExt(filename);
+        return filename.replace("-", "_").toUpperCase();
     }
 
     /**
      *
-     * @param filename
+     * @param filepath
      * @return
      */
-    private static String getNameWithoutExt(String filename) {
-        int index = filename.lastIndexOf(".");
-        if (index == -1) {
-            return filename;
+    private static String readFile(Path filepath) {
+        String content = "";
+        try {
+            content = Files.readString(filepath, StandardCharsets.US_ASCII);
+        } catch (IOException ex) {
+            Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return filename.substring(0, index);
+        return content;
     }
 
 }

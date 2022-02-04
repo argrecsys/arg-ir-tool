@@ -168,7 +168,7 @@ public class InfoRetriever {
         } catch (ParseException | IOException ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return propList;
     }
 

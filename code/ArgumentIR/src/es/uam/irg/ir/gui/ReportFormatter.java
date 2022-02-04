@@ -44,10 +44,12 @@ public class ReportFormatter {
 
     public String getProposalInfoReport(DMProposal prop) {
         String report = reports.get("PROPOSAL_INFO");
-        report = report.replace("$TITLE$", prop.getTitle());
+        report = report.replace("$TITLE$", prop.getTitle().toUpperCase());
+        report = report.replace("URL", prop.getUrl());
         report = report.replace("$DATE$", prop.getDate());
-        report = report.replace("$NUM_SUPPORTS$", ""+prop.getNumSupports());
-        report = report.replace("$NUM_COMMENTS$", ""+prop.getNumComments());
+        report = report.replace("$NUM_COMMENTS$", "" + prop.getNumComments());
+        report = report.replace("$NUM_SUPPORTS$", "" + prop.getNumSupports());
+        report = report.replace("$CODE$", prop.getCode());
         report = report.replace("$SUMMARY$", prop.getSummary());
         return report;
     }

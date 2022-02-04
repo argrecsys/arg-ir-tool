@@ -2,20 +2,25 @@ package es.uam.irg.decidemadrid.entities;
 
 public class DMProposal {
 
-    private int id;
-    private String title;
-    private int userId;
+    public final static String HOME_PAGE = "https://decide.madrid.es";
+
+    private String code;
     private String date;
     private int day;
+    private int id;
     private int month;
-    private int year;
-    private String summary;
-    private String text;
     private int numComments;
     private int numSupports;
+    private String summary;
+    private String text;
+    private String title;
+    private String url;
+    private int userId;
+    private int year;
 
-    public DMProposal(int id, String title, int userId, String date, String summary, String text, int numComments, int numSupports) {
+    public DMProposal(int id, String code, String title, int userId, String date, String summary, String text, int numComments, int numSupports, String url) {
         this.id = id;
+        this.code = code;
         this.title = title;
         this.userId = userId;
         this.date = date;
@@ -27,57 +32,7 @@ public class DMProposal {
         this.text = text;
         this.numComments = numComments;
         this.numSupports = numSupports;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public int getDay() {
-        return day;
-    }
-
-    public int getMonth() {
-        return month;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public int getNumComments() {
-        return numComments;
-    }
-
-    public int getNumSupports() {
-        return numSupports;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 97 * hash + this.id;
-        return hash;
+        this.url = HOME_PAGE + url;
     }
 
     @Override
@@ -96,6 +51,65 @@ public class DMProposal {
             return false;
         }
         return true;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getMonth() {
+        return month;
+    }
+
+    public int getNumComments() {
+        return numComments;
+    }
+
+    public int getNumSupports() {
+        return numSupports;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + this.id;
+        return hash;
     }
 
     @Override

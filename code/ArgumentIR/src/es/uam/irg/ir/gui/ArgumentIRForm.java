@@ -172,27 +172,9 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         if (query.isEmpty()) {
             result = this.formatter.getNoValidQueryReport();
         } else {
-            int nReports = 0;
-            double timeElapsed = 0.0;
-            StringBuilder body = new StringBuilder();
-
-            // Query data
-            long start = System.nanoTime();
-            List<DMProposal> propList = this.retriever.queryData(query, nTop, reRankBy);
-            long finish = System.nanoTime();
-            timeElapsed = (finish - start) / 1000000000;
-            nReports = propList.size();
-
-            // Format data
-            for (DMProposal proposal : propList) {
-                body.append(this.formatter.getProposalInfoReport(proposal));
-            }
-            result = this.formatter.getProposalListReport();
-            result = result.replace("$N_REPORTS$", "" + nReports);
-            result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
-            result = result.replace("$CONTENT$", body.toString());
+            result = queryData(query, nTop, reRankBy);
         }
-        
+
         // Display report
         this.txtResult.setText(result);
     }//GEN-LAST:event_btnSearchActionPerformed
@@ -208,4 +190,36 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private javax.swing.JTextField txtQuery;
     private javax.swing.JTextPane txtResult;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * 
+     * @param query
+     * @param nTop
+     * @param reRankBy
+     * @return 
+     */
+    private String queryData(String query, int nTop, String reRankBy) {
+        int nReports = 0;
+        double timeElapsed = 0.0;
+        StringBuilder body = new StringBuilder();
+
+        // Query data
+        long start = System.nanoTime();
+        List<DMProposal> propList = this.retriever.queryData(query, nTop, reRankBy);
+        long finish = System.nanoTime();
+        timeElapsed = (finish - start) / 1000000000;
+        nReports = propList.size();
+
+        // Format data
+        for (DMProposal proposal : propList) {
+            body.append(this.formatter.getProposalInfoReport(proposal));
+        }
+
+        String result = this.formatter.getProposalListReport();
+        result = result.replace("$N_REPORTS$", "" + nReports);
+        result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
+        result = result.replace("$CONTENT$", body.toString());
+
+        return result;
+    }
 }

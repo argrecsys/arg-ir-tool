@@ -92,4 +92,35 @@ public class DMDBManager {
         return proposals;
     }
 
+    public Map<Integer, DMProposalSummary> selectProposalsSummary() throws Exception {
+        Map<Integer, DMProposalSummary> proposals = new HashMap<>();
+
+        String query = "SELECT p.id, "
+                + "       IFNULL(GROUP_CONCAT(DISTINCT pc.category), '') AS categories, "
+                + "       IFNULL(GROUP_CONCAT(DISTINCT pd.district), '') AS districts, "
+                + "       IFNULL(GROUP_CONCAT(DISTINCT pt.topic), '') AS topic "
+                + "  FROM proposals AS p "
+                + "  LEFT OUTER JOIN "
+                + "       proposal_categories AS pc ON p.id = pc.id "
+                + "  LEFT OUTER JOIN "
+                + "       proposal_locations AS pd ON p.id = pd.id "
+                + "  LEFT OUTER JOIN "
+                + "       proposal_topics AS pt ON p.id = pt.id "
+                + " GROUP BY p.id, p.date, p.title;";
+        ResultSet rs = this.db.executeSelect(query);
+
+        while (rs != null && rs.next()) {
+            int id = rs.getInt("id");
+            String categories = rs.getString("categories").toLowerCase();
+            String districts = rs.getString("districts").toLowerCase();
+            String topics = rs.getString("topic").toLowerCase();
+
+            DMProposalSummary proposal = new DMProposalSummary(id, categories, districts, topics);
+            proposals.put(id, proposal);
+        }
+        rs.close();
+
+        return proposals;
+    }
+
 }

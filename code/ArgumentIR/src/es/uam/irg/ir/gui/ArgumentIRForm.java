@@ -17,9 +17,11 @@
  */
 package es.uam.irg.ir.gui;
 
-import es.uam.irg.decidemadrid.entities.DMProposal;
+import es.uam.irg.ir.DocumentResult;
 import es.uam.irg.ir.InfoRetriever;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.text.html.HTMLEditorKit;
 
@@ -27,26 +29,28 @@ import javax.swing.text.html.HTMLEditorKit;
  *
  */
 public class ArgumentIRForm extends javax.swing.JFrame {
-    
+
     public static final String HTML_CONTENT_TYPE = "text/html";
-    
+
     private final InfoRetriever retriever;
     private final ReportFormatter formatter;
     private final HTMLEditorKit kit;
     private final DecimalFormat df;
+    private final DateTimeFormatter dtf;
 
     /**
      * Creates new form ArgumentIRForm
      */
     public ArgumentIRForm() {
         initComponents();
-        
+
         this.kit = new HTMLEditorKit();
         this.txtResult.setEditorKit(kit);
         this.txtResult.setContentType(HTML_CONTENT_TYPE);
         this.retriever = new InfoRetriever();
         this.formatter = new ReportFormatter();
         this.df = new DecimalFormat("0.000");
+        this.dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
     }
 
     /**
@@ -198,10 +202,10 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     private String queryData(String query, int nTop, String reRankBy) {
         String result = "";
-        
+
         if (query.isEmpty()) {
             result = this.formatter.getNoValidQueryReport();
-            
+
         } else {
             int nReports = 0;
             double timeElapsed = 0.0;
@@ -209,23 +213,24 @@ public class ArgumentIRForm extends javax.swing.JFrame {
 
             // Query data
             long start = System.nanoTime();
-            List<DMProposal> propList = this.retriever.queryData(query, nTop, reRankBy);
+            List<DocumentResult> docList = this.retriever.queryData(query, nTop, reRankBy);
             long finish = System.nanoTime();
             timeElapsed = (finish - start) / 1000000000;
-            nReports = propList.size();
+            nReports = docList.size();
 
             // Format data
-            for (DMProposal proposal : propList) {
-                body.append(this.formatter.getProposalInfoReport(proposal));
+            for (DocumentResult doc : docList) {
+                body.append(this.formatter.getProposalInfoReport(doc));
             }
-            
+
             result = this.formatter.getProposalListReport();
             result = result.replace("$N_REPORTS$", "" + nReports);
             result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
+            result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
             result = result.replace("$CONTENT$", body.toString());
         }
-        
+
         return result;
     }
-    
+
 }

@@ -20,6 +20,7 @@ package es.uam.irg.ir;
 import es.uam.irg.decidemadrid.db.DMDBManager;
 import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMProposal;
+import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.utils.FunctionUtils;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public class InfoRetriever {
     private final Map<String, Object> mdbSetup;
     private final Map<String, Object> msqlSetup;
     private Map<Integer, DMComment> proposalComments;
+    private Map<Integer, DMProposalSummary> proposalSummaries;
     private Map<Integer, DMProposal> proposals;
 
     /**
@@ -79,17 +81,28 @@ public class InfoRetriever {
      */
     public void createIndex() {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        String proposalId;
         DMProposal proposal;
+        int proposalId;
+        String title;
+        String summary;
+        String categories;
+        String districts;
+        String topics;
 
         try {
+            // Storing proposals
             try ( IndexWriter w = new IndexWriter(index, config)) {
-                // 1. Analize argumentative proposals
                 System.out.println("Proposals annotation");
                 for (Map.Entry<Integer, DMProposal> entry : proposals.entrySet()) {
-                    proposalId = entry.getKey().toString();
+                    proposalId = entry.getKey();
                     proposal = entry.getValue();
-                    addDocToIndex(w, proposalId, proposal.getTitle(), proposal.getSummary());
+                    title = proposal.getTitle();
+                    summary = proposal.getSummary();
+                    categories = proposalSummaries.get(proposalId).getCategories();
+                    districts = proposalSummaries.get(proposalId).getDistricts();
+                    topics = proposalSummaries.get(proposalId).getTopics();
+
+                    addDocToIndex(w, proposalId, title, summary, categories, districts, topics);
                 }
             }
 
@@ -115,10 +128,13 @@ public class InfoRetriever {
                 dbManager = new DMDBManager();
             }
 
-            // Get proposals with linkers
+            // Get proposals
             proposals = dbManager.selectProposals();
 
-            // Get proposal comments with linkers
+            // Get proposal summaries
+            proposalSummaries = dbManager.selectProposalsSummary();
+
+            // Get proposal comments
             proposalComments = dbManager.selectComments();
 
         } catch (Exception ex) {
@@ -128,6 +144,7 @@ public class InfoRetriever {
         // Show results
         if (VERBOSE) {
             System.out.println(" - Number of proposals: " + proposals.size());
+            System.out.println(" - Number of proposal summaries: " + proposals.size());
             System.out.println(" - Number of comments: " + proposalComments.size());
         }
     }
@@ -140,27 +157,28 @@ public class InfoRetriever {
      * @param reRankBy
      * @return
      */
-    public List<DMProposal> queryData(String querystr, int hitsPerPage, String reRankBy) {
-        List<DMProposal> propList = new ArrayList<>();
+    public List<DocumentResult> queryData(String querystr, int hitsPerPage, String reRankBy) {
+        List<DocumentResult> docList = new ArrayList<>();
 
         try {
             // The "title" arg specifies the default field to use when no field is explicitly specified in the query
-            Query q = new QueryParser("summary", analyzer).parse(querystr);
+            Query q = new QueryParser("title", analyzer).parse(querystr);
 
-            // 3. search
+            // Search
             IndexReader reader = DirectoryReader.open(index);
             IndexSearcher searcher = new IndexSearcher(reader);
             TopDocs docs = searcher.search(q, hitsPerPage);
             ScoreDoc[] hits = docs.scoreDocs;
 
-            // 4. display results
-            System.out.println(">> Found " + hits.length + " hits:");
+            // Store results
             for (int i = 0; i < hits.length; ++i) {
                 int docId = hits[i].doc;
-                Document d = searcher.doc(docId);
-                int proposalId = Integer.parseInt(d.get("id"));
-                propList.add(proposals.get(proposalId));
+                Document doc = searcher.doc(docId);
+                int proposalId = Integer.parseInt(doc.get("id"));
+                DocumentResult docResult = new DocumentResult(proposals.get(proposalId), proposalSummaries.get(proposalId));
+                docList.add(docResult);
             }
+            System.out.println(">> Found " + docList.size() + " hits:");
 
             // Reader can only be closed when there is no need to access the documents any more.
             reader.close();
@@ -169,24 +187,30 @@ public class InfoRetriever {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return propList;
+        return docList;
     }
 
     /**
      *
      *
-     * @param w
+     * @param iw
      * @param proposalId
      * @param title
      * @param summary
+     * @param categories
+     * @param districts
+     * @param topics
      * @throws IOException
      */
-    private void addDocToIndex(IndexWriter w, String proposalId, String title, String summary) throws IOException {
+    private void addDocToIndex(IndexWriter iw, int proposalId, String title, String summary, String categories, String districts, String topics) throws IOException {
         Document doc = new Document();
-        doc.add(new StringField("id", proposalId, Field.Store.YES));
+        doc.add(new StringField("id", "" + proposalId, Field.Store.YES));
         doc.add(new TextField("title", title, Field.Store.YES));
         doc.add(new TextField("summary", summary, Field.Store.YES));
-        w.addDocument(doc);
+        doc.add(new TextField("categories", categories, Field.Store.YES));
+        doc.add(new TextField("districts", districts, Field.Store.YES));
+        doc.add(new TextField("topics", topics, Field.Store.YES));
+        iw.addDocument(doc);
     }
 
 }

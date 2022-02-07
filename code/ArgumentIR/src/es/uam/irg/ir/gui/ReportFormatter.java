@@ -60,6 +60,6 @@ public class ReportFormatter {
 
     private void loadReports() {
         reports = IOManager.readHtmlReports(REPORTS_PATH);
-        System.out.println("- Reports numbers: " + reports.size());
+        System.out.println(" - Reports numbers: " + reports.size());
     }
 }

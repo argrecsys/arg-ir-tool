@@ -17,50 +17,34 @@
  */
 package es.uam.irg.ir.gui;
 
-import es.uam.irg.ir.DocumentResult;
-import es.uam.irg.ir.InfoRetriever;
-import java.text.DecimalFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
 /**
- *
+ * Argument IR form class.
  */
 public class ArgumentIRForm extends javax.swing.JFrame {
 
     public static final String HTML_CONTENT_TYPE = "text/html";
+    public static final String DECIMAL_FORMAT = "0.000";
+    public static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss";
 
-    private final InfoRetriever retriever;
-    private final ReportFormatter formatter;
-    private final DecimalFormat df;
-    private final DateTimeFormatter dtf;
+    private ArgumentIRModel model;
 
     /**
      * Creates new form ArgumentIRForm
      */
     public ArgumentIRForm() {
         initComponents();
-
         this.txtResult.setContentType(HTML_CONTENT_TYPE);
-        this.retriever = new InfoRetriever();
-        this.formatter = new ReportFormatter();
-        this.df = new DecimalFormat("0.000");
-        this.dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        this.model = new ArgumentIRModel(DECIMAL_FORMAT, DATE_FORMAT);
     }
 
     /**
-     * Create index wrapper.
+     *
+     * @return
      */
-    public void createIndex() {
-        this.retriever.createIndex();
-    }
-
-    /**
-     * Load data wrapper.
-     */
-    public void loadData() {
-        this.retriever.loadData();
+    private int getTopRecordsOption() {
+        String nTopOption = this.cmbTop.getSelectedItem().toString();
+        int nTop = (nTopOption.equals("All") ? Integer.MAX_VALUE : Integer.parseInt(nTopOption));
+        return nTop;
     }
 
     /**
@@ -162,15 +146,19 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Search event.
+     *
+     * @param evt
+     */
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // TODO add your handling code here:
         String query = this.txtQuery.getText();
-        String nTopOption = this.cmbTop.getSelectedItem().toString();
-        int nTop = (nTopOption.equals("All") ? Integer.MAX_VALUE : Integer.parseInt(nTopOption));
+        int nTop = getTopRecordsOption();
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
 
         // Query data
-        String result = queryData(query, nTop, reRankBy);
+        String result = this.model.queryData(query, nTop, reRankBy);
 
         // Display report
         this.txtResult.setText(result);
@@ -188,45 +176,5 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private javax.swing.JTextField txtQuery;
     private javax.swing.JTextPane txtResult;
     // End of variables declaration//GEN-END:variables
-
-    /**
-     *
-     * @param query
-     * @param nTop
-     * @param reRankBy
-     * @return
-     */
-    private String queryData(String query, int nTop, String reRankBy) {
-        String result = "";
-
-        if (query.isEmpty()) {
-            result = this.formatter.getNoValidQueryReport();
-
-        } else {
-            int nReports = 0;
-            double timeElapsed = 0.0;
-            StringBuilder body = new StringBuilder();
-
-            // Query data
-            long start = System.nanoTime();
-            List<DocumentResult> docList = this.retriever.queryData(query, nTop, reRankBy);
-            long finish = System.nanoTime();
-            timeElapsed = (finish - start) / 1000000000;
-            nReports = docList.size();
-
-            // Format data
-            for (DocumentResult doc : docList) {
-                body.append(this.formatter.getProposalInfoReport(doc));
-            }
-
-            result = this.formatter.getProposalListReport();
-            result = result.replace("$N_REPORTS$", "" + nReports);
-            result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
-            result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
-            result = result.replace("$CONTENT$", body.toString());
-        }
-
-        return result;
-    }
 
 }

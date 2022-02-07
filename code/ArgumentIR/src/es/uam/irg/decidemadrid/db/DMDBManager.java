@@ -42,24 +42,24 @@ public class DMDBManager {
     public void finalize() {
         this.db.disconnect();
     }
-    
+
     public Map<Integer, List<DMCommentTree>> selectCommentTrees() throws Exception {
         Map<Integer, List<DMCommentTree>> proposalTrees = new HashMap<>();
-        
+
         Map<Integer, List<DMComment>> proposalComments = this.selectProposalComments();
         List<Integer> proposalIds = new ArrayList<>(proposalComments.keySet());
         Collections.sort(proposalIds);
-        
+
         for (int proposalId : proposalIds) {
             proposalTrees.put(proposalId, new ArrayList<>());
-            
+
             List<DMComment> comments = proposalComments.get(proposalId);
-            
+
             List<Integer> commentIds = new ArrayList<>();
             for (DMComment comment : comments) {
                 commentIds.add(comment.getId());
             }
-            
+
             // Root comments
             for (DMComment comment : comments) {
                 int commentId = comment.getId();
@@ -71,13 +71,13 @@ public class DMDBManager {
                     }
                 }
             }
-            
+
             // Root comments' children
             for (DMCommentTree root : proposalTrees.get(proposalId)) {
                 root.expand(comments);
             }
         }
-        
+
         return proposalTrees;
     }
 
@@ -112,7 +112,7 @@ public class DMDBManager {
 
         String query = "SELECT * FROM proposal_comments";
         ResultSet rs = this.db.executeSelect(query);
-        
+
         while (rs != null && rs.next()) {
             int id = rs.getInt("id");
             int parentId = rs.getInt("parentId");

@@ -49,11 +49,6 @@ public class ArgumentIR {
             System.out.println(">> ARG-IR BEGINS");
 
             ArgumentIRForm form = new ArgumentIRForm();
-            System.out.println(">> Loading data...");
-            form.loadData();
-            System.out.println(">> Creating Lucene index...");
-            form.createIndex();
-            System.out.println(">> Display form...");
             form.setVisible(true);
 
             System.out.println(">> ARG-IR ENDS");

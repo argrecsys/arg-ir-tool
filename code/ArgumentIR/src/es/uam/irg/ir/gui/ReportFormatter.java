@@ -17,8 +17,9 @@
  */
 package es.uam.irg.ir.gui;
 
+import es.uam.irg.decidemadrid.entities.DMProposal;
+import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
-import es.uam.irg.ir.DocumentResult;
 import java.util.Map;
 
 /**
@@ -38,18 +39,21 @@ public class ReportFormatter {
         return reports.get("NO_VALID_QUERY");
     }
 
-    public String getProposalInfoReport(DocumentResult prop) {
+    public String getProposalInfoReport(DMProposal prop, DMProposalSummary sum) {
         String report = reports.get("PROPOSAL_INFO");
+
         report = report.replace("$TITLE$", prop.getTitle());
-        report = report.replace("URL", prop.getUrl());
         report = report.replace("$DATE$", prop.getDate());
         report = report.replace("$NUM_COMMENTS$", "" + prop.getNumComments());
         report = report.replace("$NUM_SUPPORTS$", "" + prop.getNumSupports());
         report = report.replace("$CODE$", prop.getCode());
+        report = report.replace("$CATEGORIES$", sum.getCategories());
+        report = report.replace("$DISTRICTS$", sum.getDistricts());
+        report = report.replace("$TOPICS$", sum.getTopics());
+        report = report.replace("$URL$", prop.getUrl());
         report = report.replace("$SUMMARY$", prop.getSummary());
-        report = report.replace("$CATEGORIES$", prop.getCategories());
-        report = report.replace("$DISTRICTS$", prop.getDistricts());
-        report = report.replace("$TOPICS$", prop.getTopics());
+        report = report.replace("$ARGUMENTS$", "-");
+
         return report;
     }
 
@@ -57,8 +61,15 @@ public class ReportFormatter {
         return reports.get("PROPOSAL_LIST");
     }
 
+    public int getReportsSize() {
+        return this.reports.size();
+    }
+
+    /**
+     * Loads all available reports into memory from disk.
+     */
     private void loadReports() {
         reports = IOManager.readHtmlReports(REPORTS_PATH);
-        System.out.println("- Reports numbers: " + reports.size());
     }
+
 }

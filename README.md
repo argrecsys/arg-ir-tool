@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
-![version](https://img.shields.io/badge/version-0.3.0-blue)
-![last-update](https://img.shields.io/badge/last_update-2/4/2022-orange)
+![version](https://img.shields.io/badge/version-0.4.0-blue)
+![last-update](https://img.shields.io/badge/last_update-2/7/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 Argument-enhanced information retrieval repository. A case study in the Decide Madrid database.

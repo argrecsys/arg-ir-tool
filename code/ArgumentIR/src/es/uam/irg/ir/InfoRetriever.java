@@ -17,14 +17,10 @@
  */
 package es.uam.irg.ir;
 
-import es.uam.irg.decidemadrid.db.DMDBManager;
-import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
-import es.uam.irg.utils.FunctionUtils;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,35 +48,25 @@ import org.apache.lucene.store.Directory;
  */
 public class InfoRetriever {
 
-    // Class constants
-    private static final boolean VERBOSE = true;
-
     // The same analyzer should be used for indexing and searching
     private final StandardAnalyzer analyzer;
     private final Directory index;
-
-    // Class members
-    private final Map<String, Object> mdbSetup;
-    private final Map<String, Object> msqlSetup;
-    private Map<Integer, DMComment> proposalComments;
-    private Map<Integer, DMProposalSummary> proposalSummaries;
-    private Map<Integer, DMProposal> proposals;
 
     /**
      * Constructor
      */
     public InfoRetriever() {
-        this.mdbSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MONGO_DB);
-        this.msqlSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MYSQL_DB);
         this.analyzer = new StandardAnalyzer();
         this.index = new ByteBuffersDirectory();
     }
 
     /**
      *
+     *
+     * @param proposals
+     * @param proposalSummaries
      */
-    public void createIndex() {
-        IndexWriterConfig config = new IndexWriterConfig(analyzer);
+    public void createIndex(Map<Integer, DMProposal> proposals, Map<Integer, DMProposalSummary> proposalSummaries) {
         DMProposal proposal;
         int proposalId;
         String title;
@@ -91,8 +77,9 @@ public class InfoRetriever {
 
         try {
             // Storing proposals
+            IndexWriterConfig config = new IndexWriterConfig(analyzer);
             try ( IndexWriter w = new IndexWriter(index, config)) {
-                System.out.println("Proposals annotation");
+
                 for (Map.Entry<Integer, DMProposal> entry : proposals.entrySet()) {
                     proposalId = entry.getKey();
                     proposal = entry.getValue();
@@ -114,51 +101,14 @@ public class InfoRetriever {
 
     /**
      *
-     */
-    public void loadData() {
-        proposals = new HashMap<>();
-        proposalComments = new HashMap<>();
-
-        // Connecting to databse
-        try {
-            DMDBManager dbManager = null;
-            if (msqlSetup != null && msqlSetup.size() == 4) {
-                dbManager = new DMDBManager(msqlSetup);
-            } else {
-                dbManager = new DMDBManager();
-            }
-
-            // Get proposals
-            proposals = dbManager.selectProposals();
-
-            // Get proposal summaries
-            proposalSummaries = dbManager.selectProposalsSummary();
-
-            // Get proposal comments
-            proposalComments = dbManager.selectComments();
-
-        } catch (Exception ex) {
-            Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        // Show results
-        if (VERBOSE) {
-            System.out.println(" - Number of proposals: " + proposals.size());
-            System.out.println(" - Number of proposal summaries: " + proposals.size());
-            System.out.println(" - Number of comments: " + proposalComments.size());
-        }
-    }
-
-    /**
-     *
      *
      * @param querystr
      * @param hitsPerPage
      * @param reRankBy
      * @return
      */
-    public List<DocumentResult> queryData(String querystr, int hitsPerPage, String reRankBy) {
-        List<DocumentResult> docList = new ArrayList<>();
+    public List<Integer> queryData(String querystr, int hitsPerPage, String reRankBy) {
+        List<Integer> docList = new ArrayList<>();
 
         try {
             // The "title" arg specifies the default field to use when no field is explicitly specified in the query
@@ -175,10 +125,8 @@ public class InfoRetriever {
                 int docId = hits[i].doc;
                 Document doc = searcher.doc(docId);
                 int proposalId = Integer.parseInt(doc.get("id"));
-                DocumentResult docResult = new DocumentResult(proposals.get(proposalId), proposalSummaries.get(proposalId));
-                docList.add(docResult);
+                docList.add(proposalId);
             }
-            System.out.println(">> Found " + docList.size() + " hits:");
 
             // Reader can only be closed when there is no need to access the documents any more.
             reader.close();

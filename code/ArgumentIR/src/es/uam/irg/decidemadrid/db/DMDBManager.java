@@ -3,7 +3,10 @@ package es.uam.irg.decidemadrid.db;
 import es.uam.irg.db.MySQLDBConnector;
 import es.uam.irg.decidemadrid.entities.*;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DMDBManager {
@@ -40,6 +43,44 @@ public class DMDBManager {
         this.db.disconnect();
     }
 
+    public Map<Integer, List<DMCommentTree>> selectCommentTrees() throws Exception {
+        Map<Integer, List<DMCommentTree>> proposalTrees = new HashMap<>();
+
+        Map<Integer, List<DMComment>> proposalComments = this.selectProposalComments();
+        List<Integer> proposalIds = new ArrayList<>(proposalComments.keySet());
+        Collections.sort(proposalIds);
+
+        for (int proposalId : proposalIds) {
+            proposalTrees.put(proposalId, new ArrayList<>());
+
+            List<DMComment> comments = proposalComments.get(proposalId);
+
+            List<Integer> commentIds = new ArrayList<>();
+            for (DMComment comment : comments) {
+                commentIds.add(comment.getId());
+            }
+
+            // Root comments
+            for (DMComment comment : comments) {
+                int commentId = comment.getId();
+                int parentId = comment.getParentId();
+                if (parentId == -1) {
+                    DMCommentTree root = new DMCommentTree(commentId, 0);
+                    if (!proposalTrees.get(proposalId).contains(root)) {
+                        proposalTrees.get(proposalId).add(root);
+                    }
+                }
+            }
+
+            // Root comments' children
+            for (DMCommentTree root : proposalTrees.get(proposalId)) {
+                root.expand(comments);
+            }
+        }
+
+        return proposalTrees;
+    }
+
     public Map<Integer, DMComment> selectComments() throws Exception {
         Map<Integer, DMComment> comments = new HashMap<>();
 
@@ -60,6 +101,35 @@ public class DMDBManager {
 
             DMComment comment = new DMComment(id, parentId, proposalId, userId, date, time, text, votes, votesUp, votesDown);
             comments.put(id, comment);
+        }
+        rs.close();
+
+        return comments;
+    }
+
+    public Map<Integer, List<DMComment>> selectProposalComments() throws Exception {
+        Map<Integer, List<DMComment>> comments = new HashMap<>();
+
+        String query = "SELECT * FROM proposal_comments";
+        ResultSet rs = this.db.executeSelect(query);
+
+        while (rs != null && rs.next()) {
+            int id = rs.getInt("id");
+            int parentId = rs.getInt("parentId");
+            int proposalId = rs.getInt("proposalId");
+            int userId = rs.getInt("userId");
+            String date = rs.getDate("date").toString();
+            String time = rs.getTime("time").toString();
+            String text = rs.getString("text");
+            int votes = rs.getInt("numVotes");
+            int votesUp = rs.getInt("numPositiveVotes");
+            int votesDown = rs.getInt("numNegativeVotes");
+
+            DMComment comment = new DMComment(id, parentId, proposalId, userId, date, time, text, votes, votesUp, votesDown);
+            if (!comments.containsKey(proposalId)) {
+                comments.put(proposalId, new ArrayList<>());
+            }
+            comments.get(proposalId).add(comment);
         }
         rs.close();
 

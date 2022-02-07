@@ -51,26 +51,22 @@ public class InfoRetriever {
     // The same analyzer should be used for indexing and searching
     private final StandardAnalyzer analyzer;
     private final Directory index;
-    private Map<Integer, DMProposalSummary> proposalSummaries;
-    private Map<Integer, DMProposal> proposals;
 
     /**
      * Constructor
-     *
-     * @param proposals
-     * @param proposalSummaries
      */
-    public InfoRetriever(Map<Integer, DMProposal> proposals, Map<Integer, DMProposalSummary> proposalSummaries) {
+    public InfoRetriever() {
         this.analyzer = new StandardAnalyzer();
         this.index = new ByteBuffersDirectory();
-        this.proposals = proposals;
-        this.proposalSummaries = proposalSummaries;
     }
 
     /**
      *
+     *
+     * @param proposals
+     * @param proposalSummaries
      */
-    public void createIndex() {
+    public void createIndex(Map<Integer, DMProposal> proposals, Map<Integer, DMProposalSummary> proposalSummaries) {
         DMProposal proposal;
         int proposalId;
         String title;
@@ -111,8 +107,8 @@ public class InfoRetriever {
      * @param reRankBy
      * @return
      */
-    public List<DocumentResult> queryData(String querystr, int hitsPerPage, String reRankBy) {
-        List<DocumentResult> docList = new ArrayList<>();
+    public List<Integer> queryData(String querystr, int hitsPerPage, String reRankBy) {
+        List<Integer> docList = new ArrayList<>();
 
         try {
             // The "title" arg specifies the default field to use when no field is explicitly specified in the query
@@ -129,8 +125,7 @@ public class InfoRetriever {
                 int docId = hits[i].doc;
                 Document doc = searcher.doc(docId);
                 int proposalId = Integer.parseInt(doc.get("id"));
-                DocumentResult docResult = new DocumentResult(proposals.get(proposalId), proposalSummaries.get(proposalId));
-                docList.add(docResult);
+                docList.add(proposalId);
             }
 
             // Reader can only be closed when there is no need to access the documents any more.

@@ -22,7 +22,6 @@ import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMCommentTree;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
-import es.uam.irg.ir.DocumentResult;
 import es.uam.irg.ir.InfoRetriever;
 import es.uam.irg.utils.FunctionUtils;
 import java.text.DecimalFormat;
@@ -45,11 +44,11 @@ public class ArgumentIRModel {
     // Class objects
     private final DecimalFormat df;
     private final DateTimeFormatter dtf;
+    // Class data variables
+    private ReportFormatter formatter;
     private final Map<String, Object> mdbSetup;
     private final Map<String, Object> msqlSetup;
 
-    // Class data variables
-    private ReportFormatter formatter;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
     private Map<Integer, DMProposalSummary> proposalSummaries;
@@ -85,40 +84,48 @@ public class ArgumentIRModel {
      * @param reRankBy
      * @return
      */
-    public String queryData(String query, int nTop, String reRankBy) {
+    public String getQueryResult(String query, int nTop, String reRankBy) {
         String result = "";
 
         if (query.isEmpty()) {
             result = this.formatter.getNoValidQueryReport();
 
         } else {
-            int nReports = 0;
-            double timeElapsed = 0.0;
-            StringBuilder body = new StringBuilder();
-
             // Query data
             long start = System.nanoTime();
-            List<DocumentResult> docList = this.retriever.queryData(query, nTop, reRankBy);
+            List<Integer> docList = this.retriever.queryData(query, nTop, reRankBy);
             long finish = System.nanoTime();
-            timeElapsed = (finish - start) / 1000000;
-            nReports = docList.size();
+            double timeElapsed = (finish - start) / 1000000;
+            int nReports = docList.size();
             System.out.println(">> Found " + nReports + " hits in " + timeElapsed + " ms");
 
-            // Format data
-            for (DocumentResult doc : docList) {
-                body.append(this.formatter.getProposalInfoReport(doc));
-            }
+            // Create user report
+            if (docList.size() > 0) {
+                StringBuilder body = new StringBuilder();
+                DMProposal proposal;
+                DMProposalSummary summary;
 
-            result = this.formatter.getProposalListReport();
-            result = result.replace("$N_REPORTS$", "" + nReports);
-            result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
-            result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
-            result = result.replace("$CONTENT$", body.toString());
+                // Format data
+                for (int docId : docList) {
+                    proposal = proposals.get(docId);
+                    summary = proposalSummaries.get(docId);
+                    body.append(this.formatter.getProposalInfoReport(proposal, summary));
+                }
+
+                result = this.formatter.getProposalListReport();
+                result = result.replace("$N_REPORTS$", "" + nReports);
+                result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
+                result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
+                result = result.replace("$CONTENT$", body.toString());
+            }
         }
 
         return result;
     }
 
+    /**
+     *
+     */
     private void createDataFormatter() {
         this.formatter = new ReportFormatter();
         System.out.println(" - Reports numbers: " + this.formatter.getReportsSize());
@@ -129,8 +136,8 @@ public class ArgumentIRModel {
      */
     private void createIndex() {
         System.out.println(">> Creating Lucene index...");
-        this.retriever = new InfoRetriever(proposals, proposalSummaries);
-        this.retriever.createIndex();
+        this.retriever = new InfoRetriever();
+        this.retriever.createIndex(proposals, proposalSummaries);
     }
 
     /**

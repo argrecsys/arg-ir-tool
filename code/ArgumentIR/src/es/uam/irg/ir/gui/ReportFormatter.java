@@ -17,8 +17,9 @@
  */
 package es.uam.irg.ir.gui;
 
+import es.uam.irg.decidemadrid.entities.DMProposal;
+import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
-import es.uam.irg.ir.DocumentResult;
 import java.util.Map;
 
 /**
@@ -38,7 +39,7 @@ public class ReportFormatter {
         return reports.get("NO_VALID_QUERY");
     }
 
-    public String getProposalInfoReport(DocumentResult prop) {
+    public String getProposalInfoReport(DMProposal prop, DMProposalSummary sum) {
         String report = reports.get("PROPOSAL_INFO");
 
         report = report.replace("$TITLE$", prop.getTitle());
@@ -46,9 +47,9 @@ public class ReportFormatter {
         report = report.replace("$NUM_COMMENTS$", "" + prop.getNumComments());
         report = report.replace("$NUM_SUPPORTS$", "" + prop.getNumSupports());
         report = report.replace("$CODE$", prop.getCode());
-        report = report.replace("$CATEGORIES$", prop.getCategories());
-        report = report.replace("$DISTRICTS$", prop.getDistricts());
-        report = report.replace("$TOPICS$", prop.getTopics());
+        report = report.replace("$CATEGORIES$", sum.getCategories());
+        report = report.replace("$DISTRICTS$", sum.getDistricts());
+        report = report.replace("$TOPICS$", sum.getTopics());
         report = report.replace("$URL$", prop.getUrl());
         report = report.replace("$SUMMARY$", prop.getSummary());
         report = report.replace("$ARGUMENTS$", "-");
@@ -70,4 +71,5 @@ public class ReportFormatter {
     private void loadReports() {
         reports = IOManager.readHtmlReports(REPORTS_PATH);
     }
+
 }

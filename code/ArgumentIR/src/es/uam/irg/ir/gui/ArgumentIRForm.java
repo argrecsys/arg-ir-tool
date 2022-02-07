@@ -158,7 +158,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
 
         // Query data
-        String result = this.model.queryData(query, nTop, reRankBy);
+        String result = this.model.getQueryResult(query, nTop, reRankBy);
 
         // Display report
         this.txtResult.setText(result);

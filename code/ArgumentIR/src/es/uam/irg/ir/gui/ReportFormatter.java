@@ -40,6 +40,7 @@ public class ReportFormatter {
 
     public String getProposalInfoReport(DocumentResult prop) {
         String report = reports.get("PROPOSAL_INFO");
+
         report = report.replace("$TITLE$", prop.getTitle());
         report = report.replace("$DATE$", prop.getDate());
         report = report.replace("$NUM_COMMENTS$", "" + prop.getNumComments());
@@ -50,7 +51,8 @@ public class ReportFormatter {
         report = report.replace("$TOPICS$", prop.getTopics());
         report = report.replace("$URL$", prop.getUrl());
         report = report.replace("$SUMMARY$", prop.getSummary());
-        report = report.replace("$ARGUMENTS$", "");
+        report = report.replace("$ARGUMENTS$", "-");
+
         return report;
     }
 
@@ -58,8 +60,14 @@ public class ReportFormatter {
         return reports.get("PROPOSAL_LIST");
     }
 
+    public int getReportsSize() {
+        return this.reports.size();
+    }
+
+    /**
+     * Loads all available reports into memory from disk.
+     */
     private void loadReports() {
         reports = IOManager.readHtmlReports(REPORTS_PATH);
-        System.out.println(" - Reports numbers: " + reports.size());
     }
 }

@@ -45,11 +45,11 @@ public class ArgumentIRModel {
     // Class objects
     private final DecimalFormat df;
     private final DateTimeFormatter dtf;
-    private final ReportFormatter formatter;
     private final Map<String, Object> mdbSetup;
     private final Map<String, Object> msqlSetup;
 
     // Class data variables
+    private ReportFormatter formatter;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
     private Map<Integer, DMProposalSummary> proposalSummaries;
@@ -65,9 +65,11 @@ public class ArgumentIRModel {
     public ArgumentIRModel(String decimalFormat, String dateFormat) {
         this.df = new DecimalFormat(decimalFormat);
         this.dtf = DateTimeFormatter.ofPattern(dateFormat);
-        this.formatter = new ReportFormatter();
         this.mdbSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MONGO_DB);
         this.msqlSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MYSQL_DB);
+
+        // Loading HTML reports
+        createDataFormatter();
 
         // Data loading and IR index creation
         loadData();
@@ -75,7 +77,8 @@ public class ArgumentIRModel {
     }
 
     /**
-     * Function that queries the data to the index (Apache Lucene).
+     * Function that queries the data to the index (Apache Lucene) and returns a
+     * valid report.
      *
      * @param query
      * @param nTop
@@ -97,9 +100,9 @@ public class ArgumentIRModel {
             long start = System.nanoTime();
             List<DocumentResult> docList = this.retriever.queryData(query, nTop, reRankBy);
             long finish = System.nanoTime();
-            timeElapsed = (finish - start);
+            timeElapsed = (finish - start) / 1000000;
             nReports = docList.size();
-            System.out.println(">> Found " + docList.size() + " hits in " + timeElapsed + " ns");
+            System.out.println(">> Found " + nReports + " hits in " + timeElapsed + " ms");
 
             // Format data
             for (DocumentResult doc : docList) {
@@ -108,12 +111,17 @@ public class ArgumentIRModel {
 
             result = this.formatter.getProposalListReport();
             result = result.replace("$N_REPORTS$", "" + nReports);
-            result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed / 1000000000));
+            result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
             result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
             result = result.replace("$CONTENT$", body.toString());
         }
 
         return result;
+    }
+
+    private void createDataFormatter() {
+        this.formatter = new ReportFormatter();
+        System.out.println(" - Reports numbers: " + this.formatter.getReportsSize());
     }
 
     /**

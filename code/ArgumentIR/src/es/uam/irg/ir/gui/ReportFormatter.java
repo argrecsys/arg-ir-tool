@@ -41,15 +41,16 @@ public class ReportFormatter {
     public String getProposalInfoReport(DocumentResult prop) {
         String report = reports.get("PROPOSAL_INFO");
         report = report.replace("$TITLE$", prop.getTitle());
-        report = report.replace("URL", prop.getUrl());
         report = report.replace("$DATE$", prop.getDate());
         report = report.replace("$NUM_COMMENTS$", "" + prop.getNumComments());
         report = report.replace("$NUM_SUPPORTS$", "" + prop.getNumSupports());
         report = report.replace("$CODE$", prop.getCode());
-        report = report.replace("$SUMMARY$", prop.getSummary());
         report = report.replace("$CATEGORIES$", prop.getCategories());
         report = report.replace("$DISTRICTS$", prop.getDistricts());
         report = report.replace("$TOPICS$", prop.getTopics());
+        report = report.replace("$URL$", prop.getUrl());
+        report = report.replace("$SUMMARY$", prop.getSummary());
+        report = report.replace("$ARGUMENTS$", "");
         return report;
     }
 

@@ -23,7 +23,6 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import javax.swing.text.html.HTMLEditorKit;
 
 /**
  *
@@ -34,7 +33,6 @@ public class ArgumentIRForm extends javax.swing.JFrame {
 
     private final InfoRetriever retriever;
     private final ReportFormatter formatter;
-    private final HTMLEditorKit kit;
     private final DecimalFormat df;
     private final DateTimeFormatter dtf;
 
@@ -44,8 +42,6 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public ArgumentIRForm() {
         initComponents();
 
-        this.kit = new HTMLEditorKit();
-        this.txtResult.setEditorKit(kit);
         this.txtResult.setContentType(HTML_CONTENT_TYPE);
         this.retriever = new InfoRetriever();
         this.formatter = new ReportFormatter();

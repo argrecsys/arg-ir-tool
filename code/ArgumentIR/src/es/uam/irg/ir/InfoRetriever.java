@@ -19,6 +19,7 @@ package es.uam.irg.ir;
 
 import es.uam.irg.decidemadrid.db.DMDBManager;
 import es.uam.irg.decidemadrid.entities.DMComment;
+import es.uam.irg.decidemadrid.entities.DMCommentTree;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.utils.FunctionUtils;
@@ -65,6 +66,7 @@ public class InfoRetriever {
     private Map<Integer, DMComment> proposalComments;
     private Map<Integer, DMProposalSummary> proposalSummaries;
     private Map<Integer, DMProposal> proposals;
+    private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
 
     /**
      * Constructor
@@ -136,6 +138,9 @@ public class InfoRetriever {
 
             // Get proposal comments
             proposalComments = dbManager.selectComments();
+            
+            // Get comments trees
+            proposalCommentTrees = dbManager.selectCommentTrees();
 
         } catch (Exception ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);

@@ -19,9 +19,12 @@ package es.uam.irg.utils;
 
 //import es.uam.irg.io.IOManager;
 import es.uam.irg.io.IOManager;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,9 @@ public class FunctionUtils {
     public static final String MYSQL_DB = "MYSQL_DB";
     private static final String MDB_SETUP_FILEPATH = "Resources/config/mdb_setup.yaml";
     private static final String MSQL_SETUP_FILEPATH = "Resources/config/msql_setup.yaml";
+
+    // Class variables
+    private static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     /**
      *
@@ -86,7 +92,7 @@ public class FunctionUtils {
 
         return setup;
     }
-    
+
     /**
      *
      * @param filename
@@ -121,11 +127,19 @@ public class FunctionUtils {
 
     /**
      *
+     * @param msg
+     */
+    public static void printWithDatestamp(String msg) {
+        System.out.println(msg + " - " + dateFormat.format(new Date()));
+    }
+
+    /**
+     *
      * @param map
      * @return
      */
-    public static Map<String, Integer> sortMapByValue(Map<String, Integer> map) {
-        LinkedHashMap<String, Integer> reverseSortedMap = new LinkedHashMap<>();
+    public static Map<Integer, Integer> sortMapByValue(Map<Integer, Integer> map) {
+        LinkedHashMap<Integer, Integer> reverseSortedMap = new LinkedHashMap<>();
 
         // Use Comparator.reverseOrder() for reverse ordering
         map.entrySet()

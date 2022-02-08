@@ -18,6 +18,7 @@
 package es.uam.irg.ir;
 
 import es.uam.irg.ir.gui.ArgumentIRForm;
+import es.uam.irg.utils.FunctionUtils;
 
 /**
  * Program main class.
@@ -46,12 +47,12 @@ public class ArgumentIR {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            System.out.println(">> ARG-IR BEGINS");
+            FunctionUtils.printWithDatestamp(">> ARG-IR BEGINS");
 
             ArgumentIRForm form = new ArgumentIRForm();
             form.setVisible(true);
 
-            System.out.println(">> ARG-IR ENDS");
+            FunctionUtils.printWithDatestamp(">> ARG-IR ENDS");
         });
     }
 

@@ -100,36 +100,34 @@ public class InfoRetriever {
     }
 
     /**
-     *
+     * Searches (within the index) for records that fulfill a certain
+     * information need (query).
      *
      * @param querystr
      * @param hitsPerPage
-     * @param reRankBy
      * @return
      */
-    public List<Integer> queryData(String querystr, int hitsPerPage, String reRankBy) {
+    public List<Integer> queryData(String querystr, int hitsPerPage) {
         List<Integer> docList = new ArrayList<>();
 
         try {
             // The "title" arg specifies the default field to use when no field is explicitly specified in the query
             Query q = new QueryParser("title", analyzer).parse(querystr);
 
-            // Search
-            IndexReader reader = DirectoryReader.open(index);
-            IndexSearcher searcher = new IndexSearcher(reader);
-            TopDocs docs = searcher.search(q, hitsPerPage);
-            ScoreDoc[] hits = docs.scoreDocs;
+            // Search within the index
+            try ( IndexReader reader = DirectoryReader.open(index)) {
+                IndexSearcher searcher = new IndexSearcher(reader);
+                TopDocs docs = searcher.search(q, hitsPerPage);
+                ScoreDoc[] hits = docs.scoreDocs;
 
-            // Store results
-            for (int i = 0; i < hits.length; ++i) {
-                int docId = hits[i].doc;
-                Document doc = searcher.doc(docId);
-                int proposalId = Integer.parseInt(doc.get("id"));
-                docList.add(proposalId);
+                // Store results
+                for (int i = 0; i < hits.length; ++i) {
+                    int docId = hits[i].doc;
+                    Document doc = searcher.doc(docId);
+                    int proposalId = Integer.parseInt(doc.get("id"));
+                    docList.add(proposalId);
+                }
             }
-
-            // Reader can only be closed when there is no need to access the documents any more.
-            reader.close();
 
         } catch (ParseException | IOException ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);

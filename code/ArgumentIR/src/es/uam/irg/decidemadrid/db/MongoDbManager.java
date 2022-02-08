@@ -23,8 +23,10 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
+import es.uam.irg.nlp.am.arguments.Argument;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -40,16 +42,16 @@ import org.bson.conversions.Bson;
 public class MongoDbManager {
 
     // Public constants
+    public static final String DB_COLLECTION = "annotations";
     public static final String DB_NAME = "decide_madrid_2019_09";
     public static final int DB_PORT = 27017;
     public static final String DB_SERVER = "localhost";
-    public static final String DB_COLLECTION = "annotations";
     private static final String NO_TOPIC = "-";
 
     // Private connector object
+    private String collName;
     private MongoDatabase db;
     private MongoClient mongoClient;
-    private String collName;
 
     /**
      * Manager constructor.
@@ -72,15 +74,15 @@ public class MongoDbManager {
     }
 
     /**
-     * 
-     * @param setup 
+     *
+     * @param setup
      */
     public MongoDbManager(Map<String, Object> setup) {
         String client = setup.get("db_server").toString();
         int port = Integer.parseInt(setup.get("db_port").toString());
         String database = setup.get("db_name").toString();
         String collection = setup.get("db_collection").toString();
-        
+
         this.mongoClient = new MongoClient(client, port);
         this.db = mongoClient.getDatabase(database);
         this.collName = collection;
@@ -122,6 +124,42 @@ public class MongoDbManager {
         }
 
         return docs;
+    }
+
+    /**
+     *
+     * @param maxTreeLevel
+     * @return
+     */
+    public Map<Integer, List<Argument>> selectProposalArguments(int maxTreeLevel) {
+        Map<Integer, List<Argument>> arguments = new HashMap<>();
+        int proposalId;
+        Argument argument;
+
+        try {
+
+            // Query documents
+            MongoCollection<Document> collection = db.getCollection(collName);
+            FindIterable<Document> cursor = collection.find();
+
+            for (Iterator<Document> it = cursor.iterator(); it.hasNext();) {
+                Document doc = it.next();
+                argument = new Argument(doc);
+                proposalId = argument.getProposalId();
+
+                if (argument.getTreeLevel() <= maxTreeLevel) {
+                    if (!arguments.containsKey(proposalId)) {
+                        arguments.put(proposalId, new ArrayList<>());
+                    }
+                    arguments.get(proposalId).add(argument);
+                }
+            }
+
+        } catch (Exception ex) {
+            System.err.println("MongoDB error: " + ex.getMessage());
+        }
+
+        return arguments;
     }
 
     /**

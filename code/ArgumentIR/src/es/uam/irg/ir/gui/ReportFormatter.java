@@ -22,6 +22,7 @@ import es.uam.irg.decidemadrid.entities.DMCommentTree;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
+import es.uam.irg.nlp.am.arguments.Argument;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -93,17 +94,19 @@ public class ReportFormatter {
      * @param summary
      * @param commentTrees
      * @param comments
+     * @param arguments
      * @return
      */
-    public String getProposalInfoReport(DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees, Map<Integer, DMComment> comments) {
+    public String getProposalInfoReport(DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees, Map<Integer, DMComment> comments, List<Argument> arguments) {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
 
         report = report.replace("$TITLE$", proposal.getTitle());
+        report = report.replace("$CODE$", proposal.getCode());
         report = report.replace("$DATE$", proposal.getDate());
         report = report.replace("$NUM_COMMENTS$", "" + proposal.getNumComments());
         report = report.replace("$NUM_SUPPORTS$", "" + proposal.getNumSupports());
-        report = report.replace("$CODE$", proposal.getCode());
+        report = report.replace("$NUM_ARGUMENTS$", "" + (arguments != null ? arguments.size() : 0));
         report = report.replace("$CATEGORIES$", summary.getCategories());
         report = report.replace("$DISTRICTS$", summary.getDistricts());
         report = report.replace("$TOPICS$", summary.getTopics());

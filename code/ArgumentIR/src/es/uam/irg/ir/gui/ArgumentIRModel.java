@@ -18,11 +18,13 @@
 package es.uam.irg.ir.gui;
 
 import es.uam.irg.decidemadrid.db.DMDBManager;
+import es.uam.irg.decidemadrid.db.MongoDbManager;
 import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMCommentTree;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.ir.InfoRetriever;
+import es.uam.irg.nlp.am.arguments.Argument;
 import es.uam.irg.utils.FunctionUtils;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +38,7 @@ import java.util.logging.Logger;
 public class ArgumentIRModel {
 
     // Class constants
+    private static final int MAX_TREE_LEVEL = 2;
     private static final boolean VERBOSE = true;
 
     // Class objects
@@ -44,6 +47,7 @@ public class ArgumentIRModel {
     private final Map<String, Object> msqlSetup;
 
     // Class data variables
+    private Map<Integer, List<Argument>> proposalArguments;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
     private Map<Integer, DMProposalSummary> proposalSummaries;
@@ -88,7 +92,7 @@ public class ArgumentIRModel {
             long finish = System.nanoTime();
             double timeElapsed = (finish - start) / 1000000;
             int nReports = docList.size();
-            System.out.println(">> Found " + nReports + " hits in " + timeElapsed + " ms");
+            FunctionUtils.printWithDatestamp(">> Found " + nReports + " hits in " + timeElapsed + " ms");
 
             // Create user report
             if (docList.size() > 0) {
@@ -97,13 +101,16 @@ public class ArgumentIRModel {
                 DMProposal proposal;
                 DMProposalSummary summary;
                 List<DMCommentTree> commentTrees;
+                List<Argument> arguments;
 
                 // Format data
                 for (int docId : docList) {
                     proposal = proposals.get(docId);
                     summary = proposalSummaries.get(docId);
                     commentTrees = proposalCommentTrees.get(docId);
-                    report = this.formatter.getProposalInfoReport(proposal, summary, commentTrees, proposalComments);
+                    arguments = proposalArguments.get(docId);
+                    
+                    report = this.formatter.getProposalInfoReport(proposal, summary, commentTrees, proposalComments, arguments);
                     body.append(report);
                 }
 
@@ -118,7 +125,7 @@ public class ArgumentIRModel {
      *
      */
     private void createIndex() {
-        System.out.println(">> Creating Lucene index...");
+        FunctionUtils.printWithDatestamp(">> Creating Lucene index...");
         this.retriever = new InfoRetriever();
         this.retriever.createIndex(proposals, proposalSummaries);
     }
@@ -130,9 +137,10 @@ public class ArgumentIRModel {
         proposals = new HashMap<>();
         proposalComments = new HashMap<>();
 
-        // Connecting to databse
+        // Connecting to databases and fetching data
         try {
-            System.out.println(">> Loading data...");
+            FunctionUtils.printWithDatestamp(">> Creating connections...");
+
             DMDBManager dbManager = null;
             if (msqlSetup != null && msqlSetup.size() == 4) {
                 dbManager = new DMDBManager(msqlSetup);
@@ -140,6 +148,15 @@ public class ArgumentIRModel {
                 dbManager = new DMDBManager();
             }
 
+            MongoDbManager mngManager = null;
+            if (mdbSetup != null && mdbSetup.size() == 4) {
+                mngManager = new MongoDbManager(mdbSetup);
+            } else {
+                mngManager = new MongoDbManager();
+            }
+
+            FunctionUtils.printWithDatestamp(">> Loading data...");
+            
             // Get proposals
             proposals = dbManager.selectProposals();
 
@@ -152,6 +169,9 @@ public class ArgumentIRModel {
             // Get comments trees
             proposalCommentTrees = dbManager.selectCommentTrees();
 
+            // Get arguments data
+            proposalArguments = mngManager.selectProposalArguments(MAX_TREE_LEVEL);
+
         } catch (Exception ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -159,8 +179,10 @@ public class ArgumentIRModel {
         // Show results
         if (VERBOSE) {
             System.out.println(" - Number of proposals: " + proposals.size());
-            System.out.println(" - Number of proposal summaries: " + proposals.size());
+            System.out.println(" - Number of proposal summaries: " + proposalSummaries.size());
             System.out.println(" - Number of comments: " + proposalComments.size());
+            System.out.println(" - Number of comment trees: " + proposalCommentTrees.size());
+            System.out.println(" - Number of arguments: " + proposalArguments.size());
         }
     }
 

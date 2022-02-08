@@ -162,7 +162,7 @@ public class DMDBManager {
         return proposals;
     }
 
-    public Map<Integer, DMProposalSummary> selectProposalsSummary() throws Exception {
+    public Map<Integer, DMProposalSummary> selectProposalSummaries() throws Exception {
         Map<Integer, DMProposalSummary> proposals = new HashMap<>();
 
         String query = "SELECT p.id, "

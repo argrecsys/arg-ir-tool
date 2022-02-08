@@ -17,9 +17,15 @@
  */
 package es.uam.irg.ir.gui;
 
+import es.uam.irg.decidemadrid.entities.DMComment;
+import es.uam.irg.decidemadrid.entities.DMCommentTree;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
+import java.text.DecimalFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,40 +35,107 @@ public class ReportFormatter {
 
     private static final String REPORTS_PATH = "Resources/views/";
 
+    private final DecimalFormat df;
+    private final DateTimeFormatter dtf;
     private Map<String, String> reports;
 
-    public ReportFormatter() {
+    /**
+     *
+     * @param decimalFormat
+     * @param dateFormat
+     */
+    public ReportFormatter(String decimalFormat, String dateFormat) {
+        this.df = new DecimalFormat(decimalFormat);
+        this.dtf = DateTimeFormatter.ofPattern(dateFormat);
         loadReports();
+    }
+
+    /**
+     * Creates comment HTML report.
+     *
+     * @param tree
+     * @param comments
+     * @return
+     */
+    public String getCommentsInfoReport(DMCommentTree tree, Map<Integer, DMComment> comments) {
+        String report = "";
+
+        if (tree != null) {
+            report = reports.get("COMMENT_INFO");
+            int nodeId = tree.getId();
+            DMComment currNode = comments.get(nodeId);
+            int leftPadding = tree.getLevel() * 15;
+
+            report = report.replace("PADDING-LEFTpx", (leftPadding + "px"));
+            report = report.replace("$ID$", "" + nodeId);
+            report = report.replace("$DATE$", currNode.getDate());
+            report = report.replace("$VOTES$", "" + currNode.getNumVotes());
+            report = report.replace("$NUM_POSITIVE$", "" + currNode.getNumVotesUp());
+            report = report.replace("$NUM_NEGATIVE$", "" + currNode.getNumVotesDown());
+            report = report.replace("$TEXT$", currNode.getText());
+
+            for (DMCommentTree node : tree.getChildren()) {
+                report += getCommentsInfoReport(node, comments);
+            }
+        }
+
+        return report;
     }
 
     public String getNoValidQueryReport() {
         return reports.get("NO_VALID_QUERY");
     }
 
-    public String getProposalInfoReport(DMProposal prop, DMProposalSummary sum) {
+    /**
+     * Creates proposal HTML report.
+     *
+     * @param proposal
+     * @param summary
+     * @param commentTrees
+     * @param comments
+     * @return
+     */
+    public String getProposalInfoReport(DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees, Map<Integer, DMComment> comments) {
         String report = reports.get("PROPOSAL_INFO");
+        StringBuilder body = new StringBuilder();
 
-        report = report.replace("$TITLE$", prop.getTitle());
-        report = report.replace("$DATE$", prop.getDate());
-        report = report.replace("$NUM_COMMENTS$", "" + prop.getNumComments());
-        report = report.replace("$NUM_SUPPORTS$", "" + prop.getNumSupports());
-        report = report.replace("$CODE$", prop.getCode());
-        report = report.replace("$CATEGORIES$", sum.getCategories());
-        report = report.replace("$DISTRICTS$", sum.getDistricts());
-        report = report.replace("$TOPICS$", sum.getTopics());
-        report = report.replace("$URL$", prop.getUrl());
-        report = report.replace("$SUMMARY$", prop.getSummary());
-        report = report.replace("$ARGUMENTS$", "-");
+        report = report.replace("$TITLE$", proposal.getTitle());
+        report = report.replace("$DATE$", proposal.getDate());
+        report = report.replace("$NUM_COMMENTS$", "" + proposal.getNumComments());
+        report = report.replace("$NUM_SUPPORTS$", "" + proposal.getNumSupports());
+        report = report.replace("$CODE$", proposal.getCode());
+        report = report.replace("$CATEGORIES$", summary.getCategories());
+        report = report.replace("$DISTRICTS$", summary.getDistricts());
+        report = report.replace("$TOPICS$", summary.getTopics());
+        report = report.replace("$URL$", proposal.getUrl());
+        report = report.replace("$SUMMARY$", proposal.getSummary());
+
+        if (commentTrees != null) {
+            String commentReport;
+            for (DMCommentTree tree : commentTrees) {
+                commentReport = getCommentsInfoReport(tree, comments);
+                body.append(commentReport);
+            }
+        }
+        report = report.replace("$COMMENTS$", body.toString());
 
         return report;
     }
 
-    public String getProposalListReport() {
-        return reports.get("PROPOSAL_LIST");
-    }
-
-    public int getReportsSize() {
-        return this.reports.size();
+    /**
+     *
+     * @param nReports
+     * @param timeElapsed
+     * @param body
+     * @return
+     */
+    public String getProposalsReport(int nReports, double timeElapsed, String body) {
+        String result = reports.get("PROPOSAL_LIST");
+        result = result.replace("$N_REPORTS$", "" + nReports);
+        result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
+        result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
+        result = result.replace("$CONTENT$", body);
+        return result;
     }
 
     /**

@@ -101,12 +101,12 @@ public class ReportFormatter {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
 
-        report = report.replace("$TITLE$", proposal.getTitle());
+        report = report.replace("$TITLE$", proposal.getTitle().toUpperCase());
         report = report.replace("$CODE$", proposal.getCode());
         report = report.replace("$DATE$", proposal.getDate());
+        report = report.replace("$NUM_ARGUMENTS$", "" + (arguments != null ? arguments.size() : 0));
         report = report.replace("$NUM_COMMENTS$", "" + proposal.getNumComments());
         report = report.replace("$NUM_SUPPORTS$", "" + proposal.getNumSupports());
-        report = report.replace("$NUM_ARGUMENTS$", "" + (arguments != null ? arguments.size() : 0));
         report = report.replace("$CATEGORIES$", summary.getCategories());
         report = report.replace("$DISTRICTS$", summary.getDistricts());
         report = report.replace("$TOPICS$", summary.getTopics());

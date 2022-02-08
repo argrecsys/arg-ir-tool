@@ -26,6 +26,7 @@ import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.ir.InfoRetriever;
 import es.uam.irg.nlp.am.arguments.Argument;
 import es.uam.irg.utils.FunctionUtils;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,11 +89,15 @@ public class ArgumentIRModel {
         } else {
             // Query data
             long start = System.nanoTime();
-            List<Integer> docList = this.retriever.queryData(query, nTop, reRankBy);
+            List<Integer> ids = this.retriever.queryData(query, nTop);
             long finish = System.nanoTime();
             double timeElapsed = (finish - start) / 1000000;
-            int nReports = docList.size();
+            int nReports = ids.size();
             FunctionUtils.printWithDatestamp(">> Found " + nReports + " hits in " + timeElapsed + " ms");
+
+            // Rerank data
+            List<Integer> docList = sortResults(ids, reRankBy);
+            FunctionUtils.printWithDatestamp(">> Data reranked by: " + reRankBy);
 
             // Create user report
             if (docList.size() > 0) {
@@ -109,7 +114,7 @@ public class ArgumentIRModel {
                     summary = proposalSummaries.get(docId);
                     commentTrees = proposalCommentTrees.get(docId);
                     arguments = proposalArguments.get(docId);
-                    
+
                     report = this.formatter.getProposalInfoReport(proposal, summary, commentTrees, proposalComments, arguments);
                     body.append(report);
                 }
@@ -125,7 +130,7 @@ public class ArgumentIRModel {
      *
      */
     private void createIndex() {
-        FunctionUtils.printWithDatestamp(">> Creating Lucene index...");
+        FunctionUtils.printWithDatestamp(">> Creating Lucene index");
         this.retriever = new InfoRetriever();
         this.retriever.createIndex(proposals, proposalSummaries);
     }
@@ -139,7 +144,7 @@ public class ArgumentIRModel {
 
         // Connecting to databases and fetching data
         try {
-            FunctionUtils.printWithDatestamp(">> Creating connections...");
+            FunctionUtils.printWithDatestamp(">> Creating connections");
 
             DMDBManager dbManager = null;
             if (msqlSetup != null && msqlSetup.size() == 4) {
@@ -155,8 +160,8 @@ public class ArgumentIRModel {
                 mngManager = new MongoDbManager();
             }
 
-            FunctionUtils.printWithDatestamp(">> Loading data...");
-            
+            FunctionUtils.printWithDatestamp(">> Loading data");
+
             // Get proposals
             proposals = dbManager.selectProposals();
 
@@ -184,6 +189,34 @@ public class ArgumentIRModel {
             System.out.println(" - Number of comment trees: " + proposalCommentTrees.size());
             System.out.println(" - Number of arguments: " + proposalArguments.size());
         }
+    }
+
+    /**
+     *
+     * @param docs
+     * @param reRankBy
+     * @return
+     */
+    private List<Integer> sortResults(List<Integer> ids, String reRankBy) {
+        List<Integer> docList = new ArrayList<>();
+
+        if (reRankBy.equals("Nothing")) {
+            docList.addAll(ids);
+
+        } else if (reRankBy.equals("Arguments")) {
+            Map<Integer, Integer> argsByProp = new HashMap<>();
+            int nArgs;
+
+            for (int id : ids) {
+                nArgs = (proposalArguments.containsKey(id) ? proposalArguments.get(id).size() : 0);
+                argsByProp.put(id, nArgs);
+            }
+
+            argsByProp = FunctionUtils.sortMapByValue(argsByProp);
+            docList.addAll(argsByProp.keySet());
+        }
+
+        return docList;
     }
 
 }

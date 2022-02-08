@@ -138,8 +138,8 @@ public class FunctionUtils {
      * @param map
      * @return
      */
-    public static Map<String, Integer> sortMapByValue(Map<String, Integer> map) {
-        LinkedHashMap<String, Integer> reverseSortedMap = new LinkedHashMap<>();
+    public static Map<Integer, Integer> sortMapByValue(Map<Integer, Integer> map) {
+        LinkedHashMap<Integer, Integer> reverseSortedMap = new LinkedHashMap<>();
 
         // Use Comparator.reverseOrder() for reverse ordering
         map.entrySet()

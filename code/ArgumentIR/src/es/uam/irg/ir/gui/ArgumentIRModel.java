@@ -24,9 +24,6 @@ import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.ir.InfoRetriever;
 import es.uam.irg.utils.FunctionUtils;
-import java.text.DecimalFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,13 +39,11 @@ public class ArgumentIRModel {
     private static final boolean VERBOSE = true;
 
     // Class objects
-    private final DecimalFormat df;
-    private final DateTimeFormatter dtf;
+    private final ReportFormatter formatter;
     private final Map<String, Object> mdbSetup;
     private final Map<String, Object> msqlSetup;
 
     // Class data variables
-    private ReportFormatter formatter;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
     private Map<Integer, DMProposalSummary> proposalSummaries;
@@ -62,13 +57,9 @@ public class ArgumentIRModel {
      * @param dateFormat
      */
     public ArgumentIRModel(String decimalFormat, String dateFormat) {
-        this.df = new DecimalFormat(decimalFormat);
-        this.dtf = DateTimeFormatter.ofPattern(dateFormat);
+        this.formatter = new ReportFormatter(decimalFormat, dateFormat);
         this.mdbSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MONGO_DB);
         this.msqlSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MYSQL_DB);
-
-        // Loading HTML reports
-        createDataFormatter();
 
         // Data loading and IR index creation
         loadData();
@@ -116,23 +107,11 @@ public class ArgumentIRModel {
                     body.append(report);
                 }
 
-                result = this.formatter.getProposalListReport();
-                result = result.replace("$N_REPORTS$", "" + nReports);
-                result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
-                result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
-                result = result.replace("$CONTENT$", body.toString());
+                result = this.formatter.getProposalsReport(nReports, timeElapsed, body.toString());
             }
         }
 
         return result;
-    }
-
-    /**
-     *
-     */
-    private void createDataFormatter() {
-        this.formatter = new ReportFormatter();
-        System.out.println(" - Reports numbers: " + this.formatter.getReportsSize());
     }
 
     /**

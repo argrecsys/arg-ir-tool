@@ -1,6 +1,6 @@
 /**
  * Copyright 2022
- * Andrés Segura-Tinoco
+ * Ivan Cantador and Andrés Segura-Tinoco
  * Information Retrieval Group at Universidad Autonoma de Madrid
  *
  * This is free software: you can redistribute it and/or modify it under the
@@ -23,10 +23,10 @@ import java.util.Map;
 
 public class DMCommentTree {
 
+    private List<DMCommentTree> children;
     private int id;
     private int level;
     private List<DMCommentTree> parents;
-    private List<DMCommentTree> children;
 
     public DMCommentTree(int id, int level) {
         this(id, level, new ArrayList<>());
@@ -37,32 +37,6 @@ public class DMCommentTree {
         this.level = level;
         this.parents = parents;
         this.children = new ArrayList<>();
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public List<DMCommentTree> getParents() {
-        return parents;
-    }
-
-    public List<DMCommentTree> getChildren() {
-        return children;
-    }
-
-    private void setLevel(int level) {
-        this.level = level;
-    }
-
-    public void addParent(DMCommentTree parent) {
-        if (!this.parents.contains(parent)) {
-            this.parents.add(parent);
-        }
     }
 
     public boolean addChild(DMCommentTree node) {
@@ -85,28 +59,9 @@ public class DMCommentTree {
         return false;
     }
 
-    public void expand(List<DMComment> comments) {
-        for (DMComment comment : comments) {
-            int commentId = comment.getId();
-            int parentId = comment.getParentId();
-            if (this.id == parentId) {
-                DMCommentTree child = new DMCommentTree(commentId, this.level + 1);
-                if (!this.children.contains(child)) {
-                    this.children.add(child);
-                    child.expand(comments);
-                }
-            }
-        }
-    }
-
-    public void countNodesPerLevel(Map<Integer, Integer> nodesAtLevel) {
-        if (!nodesAtLevel.containsKey(this.level)) {
-            nodesAtLevel.put(this.level, 0);
-        }
-        int n = nodesAtLevel.get(this.level) + 1;
-        nodesAtLevel.put(this.level, n);
-        for (DMCommentTree child : this.children) {
-            child.countNodesPerLevel(nodesAtLevel);
+    public void addParent(DMCommentTree parent) {
+        if (!this.parents.contains(parent)) {
+            this.parents.add(parent);
         }
     }
 
@@ -121,11 +76,15 @@ public class DMCommentTree {
         return 1 + maxChildDepth;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + this.id;
-        return hash;
+    public void countNodesPerLevel(Map<Integer, Integer> nodesAtLevel) {
+        if (!nodesAtLevel.containsKey(this.level)) {
+            nodesAtLevel.put(this.level, 0);
+        }
+        int n = nodesAtLevel.get(this.level) + 1;
+        nodesAtLevel.put(this.level, n);
+        for (DMCommentTree child : this.children) {
+            child.countNodesPerLevel(nodesAtLevel);
+        }
     }
 
     @Override
@@ -144,6 +103,39 @@ public class DMCommentTree {
             return false;
         }
         return true;
+    }
+
+    public void expand(List<DMComment> comments) {
+        for (DMComment comment : comments) {
+            int commentId = comment.getId();
+            int parentId = comment.getParentId();
+            if (this.id == parentId) {
+                DMCommentTree child = new DMCommentTree(commentId, this.level + 1);
+                if (!this.children.contains(child)) {
+                    this.children.add(child);
+                    child.expand(comments);
+                }
+            }
+        }
+    }
+
+    public List<DMCommentTree> getChildren() {
+        return children;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + this.id;
+        return hash;
     }
 
     @Override
@@ -168,6 +160,27 @@ public class DMCommentTree {
         for (DMCommentTree node : this.children) {
             s += node.toString(comments);
         }
+        return s;
+    }
+
+    private void setLevel(int level) {
+        this.level = level;
+    }
+
+    public List<DMCommentTree> getParents() {
+        return parents;
+    }
+
+    public String toHtml(Map<Integer, DMComment> comments) {
+        String s = "<div>";
+        for (int i = 0; i < this.level; i++) {
+            s += "&#32;&#32;&#32;";
+        }
+        s += "- " + this.id + " (" + comments.get(this.id).getDate()+ "): " + comments.get(this.id).getText() + "<br/>";
+        for (DMCommentTree node : this.children) {
+            s += node.toHtml(comments);
+        }
+        s += "</div>";
         return s;
     }
 

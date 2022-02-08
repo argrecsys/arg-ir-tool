@@ -17,9 +17,12 @@
  */
 package es.uam.irg.ir.gui;
 
+import es.uam.irg.decidemadrid.entities.DMComment;
+import es.uam.irg.decidemadrid.entities.DMCommentTree;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,20 +42,35 @@ public class ReportFormatter {
         return reports.get("NO_VALID_QUERY");
     }
 
-    public String getProposalInfoReport(DMProposal prop, DMProposalSummary sum) {
+    /**
+     *
+     * @param proposal
+     * @param summary
+     * @param commentTrees
+     * @param comments
+     * @return
+     */
+    public String getProposalInfoReport(DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees, Map<Integer, DMComment> comments) {
         String report = reports.get("PROPOSAL_INFO");
+        StringBuilder body = new StringBuilder();
 
-        report = report.replace("$TITLE$", prop.getTitle());
-        report = report.replace("$DATE$", prop.getDate());
-        report = report.replace("$NUM_COMMENTS$", "" + prop.getNumComments());
-        report = report.replace("$NUM_SUPPORTS$", "" + prop.getNumSupports());
-        report = report.replace("$CODE$", prop.getCode());
-        report = report.replace("$CATEGORIES$", sum.getCategories());
-        report = report.replace("$DISTRICTS$", sum.getDistricts());
-        report = report.replace("$TOPICS$", sum.getTopics());
-        report = report.replace("$URL$", prop.getUrl());
-        report = report.replace("$SUMMARY$", prop.getSummary());
-        report = report.replace("$ARGUMENTS$", "-");
+        report = report.replace("$TITLE$", proposal.getTitle());
+        report = report.replace("$DATE$", proposal.getDate());
+        report = report.replace("$NUM_COMMENTS$", "" + proposal.getNumComments());
+        report = report.replace("$NUM_SUPPORTS$", "" + proposal.getNumSupports());
+        report = report.replace("$CODE$", proposal.getCode());
+        report = report.replace("$CATEGORIES$", summary.getCategories());
+        report = report.replace("$DISTRICTS$", summary.getDistricts());
+        report = report.replace("$TOPICS$", summary.getTopics());
+        report = report.replace("$URL$", proposal.getUrl());
+        report = report.replace("$SUMMARY$", proposal.getSummary());
+
+        if (commentTrees != null) {
+            for (DMCommentTree tree : commentTrees) {
+                body.append(tree.toHtml(comments));
+            }
+        }
+        report = report.replace("$COMMENTS$", body.toString());
 
         return report;
     }

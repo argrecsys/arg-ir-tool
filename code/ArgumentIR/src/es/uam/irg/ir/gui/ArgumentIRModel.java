@@ -44,11 +44,11 @@ public class ArgumentIRModel {
     // Class objects
     private final DecimalFormat df;
     private final DateTimeFormatter dtf;
-    // Class data variables
-    private ReportFormatter formatter;
     private final Map<String, Object> mdbSetup;
     private final Map<String, Object> msqlSetup;
 
+    // Class data variables
+    private ReportFormatter formatter;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
     private Map<Integer, DMProposalSummary> proposalSummaries;
@@ -102,14 +102,18 @@ public class ArgumentIRModel {
             // Create user report
             if (docList.size() > 0) {
                 StringBuilder body = new StringBuilder();
+                String report;
                 DMProposal proposal;
                 DMProposalSummary summary;
+                List<DMCommentTree> commentTrees;
 
                 // Format data
                 for (int docId : docList) {
                     proposal = proposals.get(docId);
                     summary = proposalSummaries.get(docId);
-                    body.append(this.formatter.getProposalInfoReport(proposal, summary));
+                    commentTrees = proposalCommentTrees.get(docId);
+                    report = this.formatter.getProposalInfoReport(proposal, summary, commentTrees, proposalComments);
+                    body.append(report);
                 }
 
                 result = this.formatter.getProposalListReport();
@@ -161,7 +165,7 @@ public class ArgumentIRModel {
             proposals = dbManager.selectProposals();
 
             // Get proposal summaries
-            proposalSummaries = dbManager.selectProposalsSummary();
+            proposalSummaries = dbManager.selectProposalSummaries();
 
             // Get proposal comments
             proposalComments = dbManager.selectComments();

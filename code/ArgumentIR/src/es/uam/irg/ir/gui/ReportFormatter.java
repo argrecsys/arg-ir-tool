@@ -100,13 +100,14 @@ public class ReportFormatter {
      * @param controversy
      * @return
      */
-    public String getProposalInfoReport(DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees,
+    public String getProposalInfoReport(int ix, DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees,
             Map<Integer, DMComment> comments, List<Argument> arguments, Double controversy) {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
         Argument arg = getProposalArgument(proposal, arguments);
 
         // Create main report
+        report = report.replace("$IX$", "" + ix);
         report = report.replace("$TITLE$", proposal.getTitle().toUpperCase());
         report = report.replace("$CODE$", proposal.getCode());
         report = report.replace("$DATE$", proposal.getDate());

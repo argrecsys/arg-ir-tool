@@ -54,10 +54,9 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         String query = this.txtQuery.getText().trim();
         int nTop = getTopRecordsOption();
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
+        header = String.format("Query: %s | Top: %d | Reranked by: %s", query, nTop, reRankBy);
         if (type.equals("html")) {
-            header = String.format("<div>Query: %s | Top: %d | Reranked by: %s</div>", query, nTop, reRankBy);
-        } else if (type.equals("txt")) {
-            header = String.format("Query: %s | Top: %d | Reranked by: %s", query, nTop, reRankBy);
+            header = String.format("<div>" + header + "</div>");
         }
 
         return header;

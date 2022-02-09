@@ -17,7 +17,7 @@ The implemented solutions depend on or make use of the following libraries and .
 - JDK 16
 - <a href="https://lucene.apache.org/" target="_blank">Apache Lucene</a> 9.0
 - MySQL Connector 8.0.22
-- MongoDB Java Driver 3.4.3
+- <a href="https://mongodb.github.io/mongo-java-driver/" target="_blank">MongoDB Java Driver</a> 3.12.10
 - Snake YAML 1.9
 - JSON Java 20210307
 

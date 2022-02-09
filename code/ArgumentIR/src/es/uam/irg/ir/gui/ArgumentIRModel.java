@@ -105,21 +105,17 @@ public class ArgumentIRModel {
             if (docList.size() > 0) {
                 StringBuilder body = new StringBuilder();
                 String report;
-                DMProposal proposal;
-                DMProposalSummary summary;
-                List<DMCommentTree> commentTrees;
-                List<Argument> arguments;
-                double controversy;
 
                 // Format data
-                for (int docId : docList) {
-                    proposal = proposals.get(docId);
-                    summary = proposalSummaries.get(docId);
-                    commentTrees = proposalCommentTrees.get(docId);
-                    arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
-                    controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId).getValue() : 0.0);
+                for (int i = 0; i < docList.size(); i++) {
+                    int docId = docList.get(i);
+                    DMProposal proposal = proposals.get(docId);
+                    DMProposalSummary summary = proposalSummaries.get(docId);
+                    List<DMCommentTree> commentTrees = proposalCommentTrees.get(docId);
+                    List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
+                    double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId).getValue() : 0.0);
 
-                    report = this.formatter.getProposalInfoReport(proposal, summary, commentTrees, proposalComments, arguments, controversy);
+                    report = this.formatter.getProposalInfoReport((i + 1), proposal, summary, commentTrees, proposalComments, arguments, controversy);
                     body.append(report);
                 }
                 result = body.toString();

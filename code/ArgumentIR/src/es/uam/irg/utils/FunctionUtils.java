@@ -156,16 +156,18 @@ public class FunctionUtils {
     }
 
     /**
-     * 
+     *
      * @param filepath
      * @param content
-     * @return 
+     * @return
      */
     public static boolean writeStringToFile(String filepath, String content) {
         boolean result = false;
         try {
-            Files.write(Paths.get(filepath), content.getBytes());
-            result = true;
+            if (!filepath.isEmpty() && !content.isEmpty()) {
+                Files.write(Paths.get(filepath), content.getBytes());
+                result = true;
+            }
         } catch (IOException ex) {
             Logger.getLogger(FunctionUtils.class.getName()).log(Level.SEVERE, null, ex);
         }

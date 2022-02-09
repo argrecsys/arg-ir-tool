@@ -69,6 +69,7 @@ public class InfoRetriever {
     public void createIndex(Map<Integer, DMProposal> proposals, Map<Integer, DMProposalSummary> proposalSummaries) {
         DMProposal proposal;
         int proposalId;
+        String code;
         String title;
         String summary;
         String categories;
@@ -83,13 +84,14 @@ public class InfoRetriever {
                 for (Map.Entry<Integer, DMProposal> entry : proposals.entrySet()) {
                     proposalId = entry.getKey();
                     proposal = entry.getValue();
+                    code = proposal.getCode();
                     title = proposal.getTitle();
                     summary = proposal.getSummary();
                     categories = proposalSummaries.get(proposalId).getCategories();
                     districts = proposalSummaries.get(proposalId).getDistricts();
                     topics = proposalSummaries.get(proposalId).getTopics();
 
-                    addDocToIndex(w, proposalId, title, summary, categories, districts, topics);
+                    addDocToIndex(w, proposalId, code, title, summary, categories, districts, topics);
                 }
             }
 
@@ -141,6 +143,7 @@ public class InfoRetriever {
      *
      * @param iw
      * @param proposalId
+     * @param code
      * @param title
      * @param summary
      * @param categories
@@ -148,9 +151,10 @@ public class InfoRetriever {
      * @param topics
      * @throws IOException
      */
-    private void addDocToIndex(IndexWriter iw, int proposalId, String title, String summary, String categories, String districts, String topics) throws IOException {
+    private void addDocToIndex(IndexWriter iw, int proposalId, String code, String title, String summary, String categories, String districts, String topics) throws IOException {
         Document doc = new Document();
         doc.add(new StringField("id", "" + proposalId, Field.Store.YES));
+        doc.add(new TextField("code", "" + code, Field.Store.YES));
         doc.add(new TextField("title", title, Field.Store.YES));
         doc.add(new TextField("summary", summary, Field.Store.YES));
         doc.add(new TextField("categories", categories, Field.Store.YES));

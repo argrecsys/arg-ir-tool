@@ -56,15 +56,17 @@ public class ReportFormatter {
      *
      * @param tree
      * @param comments
+     * @param arguments
      * @return
      */
-    public String getCommentsInfoReport(DMCommentTree tree, Map<Integer, DMComment> comments) {
+    public String getCommentsInfoReport(DMCommentTree tree, Map<Integer, DMComment> comments, List<Argument> arguments) {
         String report = "";
 
         if (tree != null) {
             report = reports.get("COMMENT_INFO");
             int nodeId = tree.getId();
             DMComment currNode = comments.get(nodeId);
+            Argument arg = getCommentArgument(currNode, arguments);
             int leftPadding = tree.getLevel() * 15;
 
             report = report.replace("PADDING-LEFTpx", (leftPadding + "px"));
@@ -73,10 +75,10 @@ public class ReportFormatter {
             report = report.replace("$VOTES$", "" + currNode.getNumVotes());
             report = report.replace("$NUM_POSITIVE$", "" + currNode.getNumVotesUp());
             report = report.replace("$NUM_NEGATIVE$", "" + currNode.getNumVotesDown());
-            report = report.replace("$TEXT$", currNode.getText());
+            report = report.replace("$TEXT$", highlightArgument(currNode.getText(), arg));
 
             for (DMCommentTree node : tree.getChildren()) {
-                report += getCommentsInfoReport(node, comments);
+                report += getCommentsInfoReport(node, comments, arguments);
             }
         }
 
@@ -100,7 +102,9 @@ public class ReportFormatter {
     public String getProposalInfoReport(DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees, Map<Integer, DMComment> comments, List<Argument> arguments) {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
+        Argument arg = getProposalArgument(proposal, arguments);
 
+        // Create main report
         report = report.replace("$TITLE$", proposal.getTitle().toUpperCase());
         report = report.replace("$CODE$", proposal.getCode());
         report = report.replace("$DATE$", proposal.getDate());
@@ -111,12 +115,13 @@ public class ReportFormatter {
         report = report.replace("$DISTRICTS$", summary.getDistricts());
         report = report.replace("$TOPICS$", summary.getTopics());
         report = report.replace("$URL$", proposal.getUrl());
-        report = report.replace("$SUMMARY$", proposal.getSummary());
+        report = report.replace("$SUMMARY$", highlightArgument(proposal.getSummary(), arg));
 
+        // Add comments
         if (commentTrees != null) {
             String commentReport;
             for (DMCommentTree tree : commentTrees) {
-                commentReport = getCommentsInfoReport(tree, comments);
+                commentReport = getCommentsInfoReport(tree, comments, arguments);
                 body.append(commentReport);
             }
         }
@@ -139,6 +144,64 @@ public class ReportFormatter {
         result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
         result = result.replace("$CONTENT$", body);
         return result;
+    }
+
+    /**
+     *
+     * @param comment
+     * @param arguments
+     * @return
+     */
+    private Argument getCommentArgument(DMComment comment, List<Argument> arguments) {
+        if (arguments != null) {
+            for (Argument arg : arguments) {
+                String[] tokens = arg.getId().split("-");
+                if (Integer.parseInt(tokens[0]) == comment.getProposalId() && Integer.parseInt(tokens[1]) == comment.getId()) {
+
+                    return arg;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param proposal
+     * @param arguments
+     * @return
+     */
+    private Argument getProposalArgument(DMProposal proposal, List<Argument> arguments) {
+        if (arguments != null) {
+            for (Argument arg : arguments) {
+                String[] tokens = arg.getId().split("-");
+                if (Integer.parseInt(tokens[0]) == proposal.getId() && Integer.parseInt(tokens[1]) == 0) {
+                    return arg;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param text
+     * @param argument
+     * @return
+     */
+    private String highlightArgument(String text, Argument arg) {
+        String newText = text;
+
+        if (arg != null) {
+            String hlClaim = "<span style='padding:3px; background-color: #C7DEFA;'>" + arg.claim.getText() + "</span>";
+            String hlPremise = "<span style='padding:3px; background-color: #DED7FB;'>" + arg.premise.getText() + "</span>";
+            String hlConnector = "<span style='padding:3px; background-color: #ABD2AC; font-style: italic;'>(" + arg.linker.getText() + ")</span>";
+
+            newText = newText.replace(arg.claim.getText(), hlClaim);
+            newText = newText.replace(arg.premise.getText(), hlPremise + " " + hlConnector);
+        }
+
+        return newText;
     }
 
     /**

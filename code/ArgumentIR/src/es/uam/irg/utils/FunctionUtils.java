@@ -19,6 +19,9 @@ package es.uam.irg.utils;
 
 //import es.uam.irg.io.IOManager;
 import es.uam.irg.io.IOManager;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,6 +31,8 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class with a set of static utility functions.
@@ -148,6 +153,25 @@ public class FunctionUtils {
                 .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
 
         return reverseSortedMap;
+    }
+
+    /**
+     *
+     * @param filepath
+     * @param content
+     * @return
+     */
+    public static boolean writeStringToFile(String filepath, String content) {
+        boolean result = false;
+        try {
+            if (!filepath.isEmpty() && !content.isEmpty()) {
+                Files.write(Paths.get(filepath), content.getBytes());
+                result = true;
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(FunctionUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
     }
 
 }

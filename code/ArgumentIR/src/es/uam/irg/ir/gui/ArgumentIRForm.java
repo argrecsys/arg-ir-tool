@@ -17,6 +17,12 @@
  */
 package es.uam.irg.ir.gui;
 
+import es.uam.irg.utils.FunctionUtils;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.text.BadLocationException;
+
 /**
  * Argument IR form class.
  */
@@ -26,7 +32,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public static final String DECIMAL_FORMAT = "0.0";
     public static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss";
 
-    private ArgumentIRModel model;
+    private final ArgumentIRModel model;
 
     /**
      * Creates new form ArgumentIRForm
@@ -35,6 +41,26 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         initComponents();
         this.txtResult.setContentType(HTML_CONTENT_TYPE);
         this.model = new ArgumentIRModel(DECIMAL_FORMAT, DATE_FORMAT);
+    }
+
+    /**
+     *
+     * @param type
+     * @return
+     */
+    private String getReportHeader(String type) {
+        String header = "";
+
+        String query = this.txtQuery.getText().trim();
+        int nTop = getTopRecordsOption();
+        String reRankBy = this.cmbReranks.getSelectedItem().toString();
+        if (type.equals("html")) {
+            header = String.format("<div>Query: %s | Top: %d | Reranked by: %s</div>", query, nTop, reRankBy);
+        } else if (type.equals("txt")) {
+            header = String.format("Query: %s | Top: %d | Reranked by: %s", query, nTop, reRankBy);
+        }
+
+        return header;
     }
 
     /**
@@ -56,15 +82,24 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        fileChooser = new javax.swing.JFileChooser();
         lblQuery = new javax.swing.JLabel();
         txtQuery = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        scrollPane = new javax.swing.JScrollPane();
         txtResult = new javax.swing.JTextPane();
         lblTop = new javax.swing.JLabel();
         cmbTop = new javax.swing.JComboBox<>();
         lblRerankBy = new javax.swing.JLabel();
         cmbReranks = new javax.swing.JComboBox<>();
+        menuBar = new javax.swing.JMenuBar();
+        menuFile = new javax.swing.JMenu();
+        mItemExportHtml = new javax.swing.JMenuItem();
+        mItemExportText = new javax.swing.JMenuItem();
+        menuSeparator = new javax.swing.JPopupMenu.Separator();
+        mItemClose = new javax.swing.JMenuItem();
+
+        fileChooser.setDialogTitle("Export report");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Argument-enhanced Information Retrieval");
@@ -84,7 +119,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         });
 
         txtResult.setEditable(false);
-        jScrollPane2.setViewportView(txtResult);
+        scrollPane.setViewportView(txtResult);
 
         lblTop.setText("Top:");
 
@@ -93,6 +128,37 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         lblRerankBy.setText("Rerank by:");
 
         cmbReranks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nothing", "Arguments", "Controversy" }));
+
+        menuFile.setText("File");
+
+        mItemExportHtml.setText("Export to Html");
+        mItemExportHtml.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mItemExportHtmlActionPerformed(evt);
+            }
+        });
+        menuFile.add(mItemExportHtml);
+
+        mItemExportText.setText("Export to Text");
+        mItemExportText.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mItemExportTextActionPerformed(evt);
+            }
+        });
+        menuFile.add(mItemExportText);
+        menuFile.add(menuSeparator);
+
+        mItemClose.setText("Close");
+        mItemClose.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mItemCloseActionPerformed(evt);
+            }
+        });
+        menuFile.add(mItemClose);
+
+        menuBar.add(menuFile);
+
+        setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -120,7 +186,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                                 .addComponent(btnSearch)
                                 .addGap(20, 20, 20))))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane2)
+                        .addComponent(scrollPane)
                         .addGap(20, 20, 20))))
         );
         layout.setVerticalGroup(
@@ -138,7 +204,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     .addComponent(lblRerankBy)
                     .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
                 .addGap(20, 20, 20))
         );
 
@@ -147,13 +213,13 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * Search event.
+     * Event: search and display results.
      *
      * @param evt
      */
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // TODO add your handling code here:
-        String query = this.txtQuery.getText();
+        String query = this.txtQuery.getText().trim();
         int nTop = getTopRecordsOption();
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
 
@@ -165,14 +231,77 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         this.txtResult.setCaretPosition(0);
     }//GEN-LAST:event_btnSearchActionPerformed
 
+    /**
+     * Event: close form.
+     *
+     * @param evt
+     */
+    private void mItemCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemCloseActionPerformed
+        // TODO add your handling code here:
+        this.setVisible(false);
+        this.dispose();
+    }//GEN-LAST:event_mItemCloseActionPerformed
+
+    /**
+     * Event: export report to html.
+     *
+     * @param evt
+     */
+    private void mItemExportHtmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemExportHtmlActionPerformed
+        // TODO add your handling code here:
+        String filepath = selectExportFile("html");
+        String header = getReportHeader("html");
+        String html = header + this.txtResult.getText();
+        FunctionUtils.writeStringToFile(filepath, html);
+    }//GEN-LAST:event_mItemExportHtmlActionPerformed
+
+    /**
+     * Event: export report to raw text.
+     *
+     * @param evt
+     */
+    private void mItemExportTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemExportTextActionPerformed
+        try {
+            // TODO add your handling code here:
+            String filepath = selectExportFile("txt");
+            String header = getReportHeader("txt");
+            String text = header + this.txtResult.getDocument().getText(0, this.txtResult.getDocument().getLength());
+            FunctionUtils.writeStringToFile(filepath, text);
+
+        } catch (BadLocationException ex) {
+            Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_mItemExportTextActionPerformed
+
+    /**
+     *
+     * @return
+     */
+    private String selectExportFile(String ext) {
+        String filepath = fileChooser.getCurrentDirectory() + "\\report N." + ext;
+        fileChooser.setSelectedFile(new java.io.File(filepath));
+        if (fileChooser.showDialog(this, "Save") == JFileChooser.APPROVE_OPTION) {
+            filepath = fileChooser.getSelectedFile().toString();
+            return filepath;
+        }
+        return "";
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
     private javax.swing.JComboBox<String> cmbReranks;
     private javax.swing.JComboBox<String> cmbTop;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JFileChooser fileChooser;
     private javax.swing.JLabel lblQuery;
     private javax.swing.JLabel lblRerankBy;
     private javax.swing.JLabel lblTop;
+    private javax.swing.JMenuItem mItemClose;
+    private javax.swing.JMenuItem mItemExportHtml;
+    private javax.swing.JMenuItem mItemExportText;
+    private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenu menuFile;
+    private javax.swing.JPopupMenu.Separator menuSeparator;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTextField txtQuery;
     private javax.swing.JTextPane txtResult;
     // End of variables declaration//GEN-END:variables

@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 public class ArgumentIRModel {
 
     // Class constants
-    private static final int MAX_TREE_LEVEL = 2;
+    private static final int MAX_TREE_LEVEL = 3;
     private static final boolean VERBOSE = true;
 
     // Class objects
@@ -113,14 +113,16 @@ public class ArgumentIRModel {
                     proposal = proposals.get(docId);
                     summary = proposalSummaries.get(docId);
                     commentTrees = proposalCommentTrees.get(docId);
-                    arguments = proposalArguments.get(docId);
+                    arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
 
                     report = this.formatter.getProposalInfoReport(proposal, summary, commentTrees, proposalComments, arguments);
                     body.append(report);
                 }
-
-                result = this.formatter.getProposalsReport(nReports, timeElapsed, body.toString());
+                result = body.toString();
             }
+
+            // Update final report
+            result = this.formatter.getProposalsReport(nReports, timeElapsed, result);
         }
 
         return result;
@@ -139,21 +141,18 @@ public class ArgumentIRModel {
      *
      */
     private void loadData() {
-        proposals = new HashMap<>();
-        proposalComments = new HashMap<>();
-
-        // Connecting to databases and fetching data
         try {
             FunctionUtils.printWithDatestamp(">> Creating connections");
 
-            DMDBManager dbManager = null;
+            // Connecting to databases and fetching data
+            DMDBManager dbManager;
             if (msqlSetup != null && msqlSetup.size() == 4) {
                 dbManager = new DMDBManager(msqlSetup);
             } else {
                 dbManager = new DMDBManager();
             }
 
-            MongoDbManager mngManager = null;
+            MongoDbManager mngManager;
             if (mdbSetup != null && mdbSetup.size() == 4) {
                 mngManager = new MongoDbManager(mdbSetup);
             } else {
@@ -177,17 +176,17 @@ public class ArgumentIRModel {
             // Get arguments data
             proposalArguments = mngManager.selectProposalArguments(MAX_TREE_LEVEL);
 
+            // Show results
+            if (VERBOSE) {
+                System.out.println(" - Number of proposals: " + proposals.size());
+                System.out.println(" - Number of proposal summaries: " + proposalSummaries.size());
+                System.out.println(" - Number of comments: " + proposalComments.size());
+                System.out.println(" - Number of comment trees: " + proposalCommentTrees.size());
+                System.out.println(" - Number of arguments: " + proposalArguments.size());
+            }
+
         } catch (Exception ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        // Show results
-        if (VERBOSE) {
-            System.out.println(" - Number of proposals: " + proposals.size());
-            System.out.println(" - Number of proposal summaries: " + proposalSummaries.size());
-            System.out.println(" - Number of comments: " + proposalComments.size());
-            System.out.println(" - Number of comment trees: " + proposalCommentTrees.size());
-            System.out.println(" - Number of arguments: " + proposalArguments.size());
         }
     }
 

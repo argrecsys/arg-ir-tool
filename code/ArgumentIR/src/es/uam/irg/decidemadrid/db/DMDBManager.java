@@ -1,6 +1,7 @@
 package es.uam.irg.decidemadrid.db;
 
 import es.uam.irg.db.MySQLDBConnector;
+import es.uam.irg.decidemadrid.controversy.ControversyScore;
 import es.uam.irg.decidemadrid.entities.*;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -55,11 +56,6 @@ public class DMDBManager {
 
             List<DMComment> comments = proposalComments.get(proposalId);
 
-            List<Integer> commentIds = new ArrayList<>();
-            for (DMComment comment : comments) {
-                commentIds.add(comment.getId());
-            }
-
             // Root comments
             for (DMComment comment : comments) {
                 int commentId = comment.getId();
@@ -110,7 +106,7 @@ public class DMDBManager {
     public Map<Integer, List<DMComment>> selectProposalComments() throws Exception {
         Map<Integer, List<DMComment>> comments = new HashMap<>();
 
-        String query = "SELECT * FROM proposal_comments";
+        String query = "SELECT * FROM proposal_comments;";
         ResultSet rs = this.db.executeSelect(query);
 
         while (rs != null && rs.next()) {
@@ -134,6 +130,26 @@ public class DMDBManager {
         rs.close();
 
         return comments;
+    }
+
+    public Map<Integer, ControversyScore> selectProposalControversy() throws Exception {
+        Map<Integer, ControversyScore> controversyScores = new HashMap<>();
+
+        String query = "SELECT proposalId, value"
+                + "	  FROM metrics_controversy"
+                + "	 WHERE name = 'AGGREGATION';";
+        ResultSet rs = this.db.executeSelect(query);
+
+        while (rs != null && rs.next()) {
+            int proposalId = rs.getInt("proposalId");
+            double value = rs.getDouble("value");
+
+            ControversyScore score = new ControversyScore(proposalId, value);
+            controversyScores.put(proposalId, score);
+        }
+        rs.close();
+
+        return controversyScores;
     }
 
     public Map<Integer, DMProposal> selectProposals() throws Exception {

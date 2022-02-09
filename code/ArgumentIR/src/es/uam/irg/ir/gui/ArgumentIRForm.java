@@ -29,7 +29,7 @@ import javax.swing.text.BadLocationException;
 public class ArgumentIRForm extends javax.swing.JFrame {
 
     public static final String HTML_CONTENT_TYPE = "text/html";
-    public static final String DECIMAL_FORMAT = "0.0";
+    public static final String DECIMAL_FORMAT = "0.000";
     public static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss";
 
     private final ArgumentIRModel model;

@@ -97,20 +97,24 @@ public class ReportFormatter {
      * @param commentTrees
      * @param comments
      * @param arguments
+     * @param controversy
      * @return
      */
-    public String getProposalInfoReport(DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees, Map<Integer, DMComment> comments, List<Argument> arguments) {
+    public String getProposalInfoReport(int ix, DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees,
+            Map<Integer, DMComment> comments, List<Argument> arguments, Double controversy) {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
         Argument arg = getProposalArgument(proposal, arguments);
 
         // Create main report
+        report = report.replace("$IX$", "" + ix);
         report = report.replace("$TITLE$", proposal.getTitle().toUpperCase());
         report = report.replace("$CODE$", proposal.getCode());
         report = report.replace("$DATE$", proposal.getDate());
         report = report.replace("$NUM_ARGUMENTS$", "" + (arguments != null ? arguments.size() : 0));
         report = report.replace("$NUM_COMMENTS$", "" + proposal.getNumComments());
         report = report.replace("$NUM_SUPPORTS$", "" + proposal.getNumSupports());
+        report = report.replace("$CONTROVERSY$", df.format(controversy));
         report = report.replace("$CATEGORIES$", summary.getCategories());
         report = report.replace("$DISTRICTS$", summary.getDistricts());
         report = report.replace("$TOPICS$", summary.getTopics());
@@ -137,10 +141,10 @@ public class ReportFormatter {
      * @param body
      * @return
      */
-    public String getProposalsReport(int nReports, double timeElapsed, String body) {
+    public String getProposalsReport(int nReports, int timeElapsed, String body) {
         String result = reports.get("PROPOSAL_LIST");
         result = result.replace("$N_REPORTS$", "" + nReports);
-        result = result.replace("$TIME_ELAPSED$", df.format(timeElapsed));
+        result = result.replace("$TIME_ELAPSED$", "" + timeElapsed);
         result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
         result = result.replace("$CONTENT$", body);
         return result;

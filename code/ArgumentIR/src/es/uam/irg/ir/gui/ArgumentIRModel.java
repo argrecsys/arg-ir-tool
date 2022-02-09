@@ -17,6 +17,7 @@
  */
 package es.uam.irg.ir.gui;
 
+import es.uam.irg.decidemadrid.controversy.ControversyScore;
 import es.uam.irg.decidemadrid.db.DMDBManager;
 import es.uam.irg.decidemadrid.db.MongoDbManager;
 import es.uam.irg.decidemadrid.entities.DMComment;
@@ -48,6 +49,7 @@ public class ArgumentIRModel {
     private final Map<String, Object> msqlSetup;
 
     // Class data variables
+    private Map<Integer, ControversyScore> controversyScores;
     private Map<Integer, List<Argument>> proposalArguments;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
@@ -91,7 +93,7 @@ public class ArgumentIRModel {
             long start = System.nanoTime();
             List<Integer> ids = this.retriever.queryData(query, nTop);
             long finish = System.nanoTime();
-            double timeElapsed = (finish - start) / 1000000;
+            int timeElapsed = (int) ((finish - start) / 1000000);
             int nReports = ids.size();
             FunctionUtils.printWithDatestamp(">> Found " + nReports + " hits in " + timeElapsed + " ms");
 
@@ -103,19 +105,17 @@ public class ArgumentIRModel {
             if (docList.size() > 0) {
                 StringBuilder body = new StringBuilder();
                 String report;
-                DMProposal proposal;
-                DMProposalSummary summary;
-                List<DMCommentTree> commentTrees;
-                List<Argument> arguments;
 
                 // Format data
-                for (int docId : docList) {
-                    proposal = proposals.get(docId);
-                    summary = proposalSummaries.get(docId);
-                    commentTrees = proposalCommentTrees.get(docId);
-                    arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
+                for (int i = 0; i < docList.size(); i++) {
+                    int docId = docList.get(i);
+                    DMProposal proposal = proposals.get(docId);
+                    DMProposalSummary summary = proposalSummaries.get(docId);
+                    List<DMCommentTree> commentTrees = proposalCommentTrees.get(docId);
+                    List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
+                    double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId).getValue() : 0.0);
 
-                    report = this.formatter.getProposalInfoReport(proposal, summary, commentTrees, proposalComments, arguments);
+                    report = this.formatter.getProposalInfoReport((i + 1), proposal, summary, commentTrees, proposalComments, arguments, controversy);
                     body.append(report);
                 }
                 result = body.toString();
@@ -176,6 +176,9 @@ public class ArgumentIRModel {
             // Get arguments data
             proposalArguments = mngManager.selectProposalArguments(MAX_TREE_LEVEL);
 
+            // Get proposal controversy scores
+            controversyScores = dbManager.selectProposalControversy();
+
             // Show results
             if (VERBOSE) {
                 System.out.println(" - Number of proposals: " + proposals.size());
@@ -183,6 +186,8 @@ public class ArgumentIRModel {
                 System.out.println(" - Number of comments: " + proposalComments.size());
                 System.out.println(" - Number of comment trees: " + proposalCommentTrees.size());
                 System.out.println(" - Number of arguments: " + proposalArguments.size());
+                System.out.println(" - Number of arguments: " + proposalArguments.size());
+                System.out.println(" - Number of controversy scores: " + controversyScores.size());
             }
 
         } catch (Exception ex) {
@@ -204,15 +209,21 @@ public class ArgumentIRModel {
 
         } else if (reRankBy.equals("Arguments")) {
             Map<Integer, Integer> argsByProp = new HashMap<>();
-            int nArgs;
 
             for (int id : ids) {
-                nArgs = (proposalArguments.containsKey(id) ? proposalArguments.get(id).size() : 0);
+                int nArgs = (proposalArguments.containsKey(id) ? proposalArguments.get(id).size() : 0);
                 argsByProp.put(id, nArgs);
             }
+            docList.addAll(FunctionUtils.sortMapByIntValue(argsByProp).keySet());
 
-            argsByProp = FunctionUtils.sortMapByValue(argsByProp);
-            docList.addAll(argsByProp.keySet());
+        } else if (reRankBy.equals("Controversy")) {
+            Map<Integer, Double> controvByProp = new HashMap<>();
+
+            for (int id : ids) {
+                double score = (controversyScores.containsKey(id) ? controversyScores.get(id).getValue() : 0.0);
+                controvByProp.put(id, score);
+            }
+            docList.addAll(FunctionUtils.sortMapByDblValue(controvByProp).keySet());
         }
 
         return docList;

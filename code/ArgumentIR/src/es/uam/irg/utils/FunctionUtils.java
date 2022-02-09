@@ -143,7 +143,24 @@ public class FunctionUtils {
      * @param map
      * @return
      */
-    public static Map<Integer, Integer> sortMapByValue(Map<Integer, Integer> map) {
+    public static Map<Integer, Double> sortMapByDblValue(Map<Integer, Double> map) {
+        LinkedHashMap<Integer, Double> reverseSortedMap = new LinkedHashMap<>();
+
+        // Use Comparator.reverseOrder() for reverse ordering
+        map.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
+
+        return reverseSortedMap;
+    }
+
+    /**
+     *
+     * @param map
+     * @return
+     */
+    public static Map<Integer, Integer> sortMapByIntValue(Map<Integer, Integer> map) {
         LinkedHashMap<Integer, Integer> reverseSortedMap = new LinkedHashMap<>();
 
         // Use Comparator.reverseOrder() for reverse ordering

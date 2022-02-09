@@ -26,7 +26,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public static final String DECIMAL_FORMAT = "0.0";
     public static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss";
 
-    private ArgumentIRModel model;
+    private final ArgumentIRModel model;
 
     /**
      * Creates new form ArgumentIRForm
@@ -153,7 +153,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // TODO add your handling code here:
-        String query = this.txtQuery.getText();
+        String query = this.txtQuery.getText().trim();
         int nTop = getTopRecordsOption();
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
 

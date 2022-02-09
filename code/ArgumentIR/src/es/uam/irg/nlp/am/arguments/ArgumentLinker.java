@@ -25,16 +25,16 @@ import org.json.JSONObject;
  */
 public class ArgumentLinker {
 
-        // Class constants
+    // Class constants
     public static final String NGRAMS_DELIMITER = "-";
-    
+
     // Class members
-    public String category;
-    public String linker;
-    public int nTokens;
-    public String relationType;
-    public String subCategory;
-    private String spLinker;
+    private final String category;
+    private final String linker;
+    private final int nTokens;
+    private final String relationType;
+    private final String spLinker;
+    private final String subCategory;
 
     /**
      * Regular constructor.
@@ -102,6 +102,14 @@ public class ArgumentLinker {
         json.put("relationType", this.relationType);
 
         return json;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getText() {
+        return String.format("%s > %s > %s", this.category, this.subCategory, this.relationType);
     }
 
     /**

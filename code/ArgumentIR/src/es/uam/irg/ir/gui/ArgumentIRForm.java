@@ -18,9 +18,13 @@
 package es.uam.irg.ir.gui;
 
 import es.uam.irg.utils.FunctionUtils;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.BadLocationException;
 
 /**
@@ -40,6 +44,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public ArgumentIRForm() {
         initComponents();
         this.txtResult.setContentType(HTML_CONTENT_TYPE);
+        this.txtResult.setEditable(false);
         this.model = new ArgumentIRModel(DECIMAL_FORMAT, DATE_FORMAT);
     }
 
@@ -86,7 +91,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         txtQuery = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
         scrollPane = new javax.swing.JScrollPane();
-        txtResult = new javax.swing.JTextPane();
+        txtResult = new javax.swing.JEditorPane();
         lblTop = new javax.swing.JLabel();
         cmbTop = new javax.swing.JComboBox<>();
         lblRerankBy = new javax.swing.JLabel();
@@ -117,7 +122,11 @@ public class ArgumentIRForm extends javax.swing.JFrame {
             }
         });
 
-        txtResult.setEditable(false);
+        txtResult.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
+            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
+                txtResultHyperlinkUpdate(evt);
+            }
+        });
         scrollPane.setViewportView(txtResult);
 
         lblTop.setText("Top:");
@@ -178,7 +187,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                                 .addComponent(lblRerankBy)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(200, Short.MAX_VALUE))
+                                .addContainerGap(743, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(txtQuery)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -203,7 +212,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     .addComponent(lblRerankBy)
                     .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
-                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
                 .addGap(20, 20, 20))
         );
 
@@ -273,6 +282,24 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     }//GEN-LAST:event_mItemExportTextActionPerformed
 
     /**
+     * Event: Catch events of hyperlinks.
+     *
+     * @param evt
+     */
+    private void txtResultHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_txtResultHyperlinkUpdate
+        // TODO add your handling code here:
+        if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().browse(evt.getURL().toURI());
+                } catch (URISyntaxException | IOException ex) {
+                    Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }//GEN-LAST:event_txtResultHyperlinkUpdate
+
+    /**
      *
      * @return
      */
@@ -302,7 +329,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator menuSeparator;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTextField txtQuery;
-    private javax.swing.JTextPane txtResult;
+    private javax.swing.JEditorPane txtResult;
     // End of variables declaration//GEN-END:variables
 
 }

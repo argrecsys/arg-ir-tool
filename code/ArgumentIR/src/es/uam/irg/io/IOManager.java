@@ -30,8 +30,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -42,8 +40,6 @@ import org.yaml.snakeyaml.Yaml;
  * Input-output manager class.
  */
 public class IOManager {
-
-    private static final String DATESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     /**
      *
@@ -60,15 +56,19 @@ public class IOManager {
                 try ( BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
                     String row;
                     String id;
+                    String label;
+                    String timestamp;
                     String value;
 
                     reader.readLine();
                     while ((row = reader.readLine()) != null) {
                         String[] data = row.split(",");
 
-                        if (data.length == 2) {
+                        if (data.length == 3) {
                             id = data[0];
-                            value = data[1];
+                            label = data[1];
+                            timestamp = data[2];
+                            value = label + "," + timestamp;
                             csvData.put(id, value);
                         }
                     }
@@ -134,21 +134,20 @@ public class IOManager {
     /**
      *
      * @param filepath
+     * @param header
      * @param csvData
      * @return
      */
-    public static boolean saveDictFromCsvFile(String filepath, Map<String, String> csvData) {
+    public static boolean saveDictToCsvFile(String filepath, String header, Map<String, String> csvData) {
         boolean result = false;
 
         if (csvData.size() > 0) {
 
             // Add data
-            String header = "arg_id,label,timestamp\n";
-            StringBuilder sb = new StringBuilder(header)  ;          
-            
+            StringBuilder sb = new StringBuilder(header);
+
             csvData.entrySet().forEach(entry -> {
-                String timeStamp = DateTimeFormatter.ofPattern(DATESTAMP_FORMAT).format(LocalDateTime.now());
-                String file = entry.getKey() + "," + entry.getValue() + "," + timeStamp + "\n";
+                String file = entry.getKey() + "," + entry.getValue() + "\n";
                 sb.append(file);
             });
 

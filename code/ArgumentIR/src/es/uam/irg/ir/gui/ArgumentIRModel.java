@@ -28,6 +28,8 @@ import es.uam.irg.io.IOManager;
 import es.uam.irg.ir.InfoRetriever;
 import es.uam.irg.nlp.am.arguments.Argument;
 import es.uam.irg.utils.FunctionUtils;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,15 +45,16 @@ public class ArgumentIRModel {
     // Class constants
     private static final String LABELS_FILEPATH = "../../results/labels.csv";
     private static final int MAX_TREE_LEVEL = 3;
-    private static final boolean VERBOSE = true;
 
     // Class objects
+    private final String dateFormat;
     private final ReportFormatter formatter;
     private final Map<String, Object> mdbSetup;
     private final Map<String, Object> msqlSetup;
 
     // Class data variables
     private Map<Integer, ControversyScore> controversyScores;
+    private boolean isDirty;
     private Map<String, String> labels;
     private Map<Integer, List<Argument>> proposalArguments;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
@@ -67,9 +70,11 @@ public class ArgumentIRModel {
      * @param dateFormat
      */
     public ArgumentIRModel(String decimalFormat, String dateFormat) {
+        this.dateFormat = dateFormat;
         this.formatter = new ReportFormatter(decimalFormat, dateFormat);
         this.mdbSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MONGO_DB);
         this.msqlSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MYSQL_DB);
+        this.isDirty = false;
 
         // Data loading and IR index creation
         loadData();
@@ -133,14 +138,34 @@ public class ArgumentIRModel {
     }
 
     /**
-     * 
+     *
+     * @return
+     */
+    public boolean isDirty() {
+        return isDirty;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean saveLabelsToFile() {
+        String header = "arg_id,label,timestamp\n";
+        boolean result = IOManager.saveDictToCsvFile(LABELS_FILEPATH, header, labels);
+        isDirty = !result;
+        return result;
+    }
+
+    /**
+     *
      * @param argumentId
      * @param label
-     * @return 
      */
-    public boolean saveValidation(String argumentId, String label) {
-        labels.put(argumentId, label);
-        return IOManager.saveDictFromCsvFile(LABELS_FILEPATH, labels);
+    public void updateModelLabel(String argumentId, String label) {
+        String timeStamp = DateTimeFormatter.ofPattern(dateFormat).format(LocalDateTime.now());
+        String value = label + "," + timeStamp;
+        labels.put(argumentId, value);
+        isDirty = true;
     }
 
     /**
@@ -178,32 +203,27 @@ public class ArgumentIRModel {
 
             // Get proposals
             proposals = dbManager.selectProposals();
+            FunctionUtils.printWithDatestamp(" - Number of proposals: " + proposals.size());
 
             // Get proposal summaries
             proposalSummaries = dbManager.selectProposalSummaries();
+            FunctionUtils.printWithDatestamp(" - Number of proposal summaries: " + proposalSummaries.size());
 
             // Get proposal comments
             proposalComments = dbManager.selectComments();
+            FunctionUtils.printWithDatestamp(" - Number of comments: " + proposalComments.size());
 
             // Get comments trees
             proposalCommentTrees = dbManager.selectCommentTrees();
+            FunctionUtils.printWithDatestamp(" - Number of comment trees: " + proposalCommentTrees.size());
 
             // Get arguments data
             proposalArguments = mngManager.selectProposalArguments(MAX_TREE_LEVEL);
+            FunctionUtils.printWithDatestamp(" - Number of arguments: " + proposalArguments.size());
 
             // Get proposal controversy scores
             controversyScores = dbManager.selectProposalControversy();
-
-            // Show results
-            if (VERBOSE) {
-                System.out.println(" - Number of proposals: " + proposals.size());
-                System.out.println(" - Number of proposal summaries: " + proposalSummaries.size());
-                System.out.println(" - Number of comments: " + proposalComments.size());
-                System.out.println(" - Number of comment trees: " + proposalCommentTrees.size());
-                System.out.println(" - Number of arguments: " + proposalArguments.size());
-                System.out.println(" - Number of arguments: " + proposalArguments.size());
-                System.out.println(" - Number of controversy scores: " + controversyScores.size());
-            }
+            FunctionUtils.printWithDatestamp(" - Number of controversy scores: " + controversyScores.size());
 
         } catch (Exception ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
@@ -216,6 +236,7 @@ public class ArgumentIRModel {
     private void loadLabels() {
         FunctionUtils.printWithDatestamp(">> Loading labels");
         labels = IOManager.readDictFromCsvFile(LABELS_FILEPATH);
+        FunctionUtils.printWithDatestamp(" - Number of labels: " + labels.size());
     }
 
     /**

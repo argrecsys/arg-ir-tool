@@ -166,6 +166,7 @@ public class ArgumentIRModel {
         String value = label + "," + timeStamp;
         labels.put(argumentId, value);
         isDirty = true;
+        FunctionUtils.printWithDatestamp(" - Argument '" + argumentId + "' has been annotated as " + label);
     }
 
     /**

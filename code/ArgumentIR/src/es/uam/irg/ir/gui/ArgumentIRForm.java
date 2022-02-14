@@ -20,10 +20,13 @@ package es.uam.irg.ir.gui;
 import es.uam.irg.utils.FunctionUtils;
 import java.awt.Desktop;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.BadLocationException;
 
@@ -34,7 +37,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
 
     public static final String HTML_CONTENT_TYPE = "text/html";
     public static final String DECIMAL_FORMAT = "0.000";
-    public static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss";
+    public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private final ArgumentIRModel model;
 
@@ -43,9 +46,23 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     public ArgumentIRForm() {
         initComponents();
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.txtResult.setContentType(HTML_CONTENT_TYPE);
         this.txtResult.setEditable(false);
         this.model = new ArgumentIRModel(DECIMAL_FORMAT, DATE_FORMAT);
+    }
+
+    /**
+     *
+     */
+    private void closeForm() {
+        if (model.isDirty()) {
+            if (JOptionPane.showConfirmDialog(this, "Arguments have been annotated. Do you want to save the new labels?", "Confirm Dialog", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                model.saveLabelsToFile();
+            }
+        }
+        this.setVisible(false);
+        this.dispose();
     }
 
     /**
@@ -102,13 +119,19 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         mItemExportText = new javax.swing.JMenuItem();
         menuSeparator = new javax.swing.JPopupMenu.Separator();
         mItemClose = new javax.swing.JMenuItem();
+        menuLabel = new javax.swing.JMenu();
+        mItemSaveLabels = new javax.swing.JMenuItem();
 
         fileChooser.setDialogTitle("Export report");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Argument-enhanced Information Retrieval");
         setMinimumSize(new java.awt.Dimension(800, 400));
-        setPreferredSize(new java.awt.Dimension(1200, 600));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         lblQuery.setText("Query:");
 
@@ -165,6 +188,18 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         menuFile.add(mItemClose);
 
         menuBar.add(menuFile);
+
+        menuLabel.setText("Label");
+
+        mItemSaveLabels.setText("Save Labels");
+        mItemSaveLabels.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mItemSaveLabelsActionPerformed(evt);
+            }
+        });
+        menuLabel.add(mItemSaveLabels);
+
+        menuBar.add(menuLabel);
 
         setJMenuBar(menuBar);
 
@@ -246,8 +281,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     private void mItemCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemCloseActionPerformed
         // TODO add your handling code here:
-        this.setVisible(false);
-        this.dispose();
+        closeForm();
     }//GEN-LAST:event_mItemCloseActionPerformed
 
     /**
@@ -289,15 +323,45 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private void txtResultHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_txtResultHyperlinkUpdate
         // TODO add your handling code here:
         if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            if (Desktop.isDesktopSupported()) {
-                try {
-                    Desktop.getDesktop().browse(evt.getURL().toURI());
-                } catch (URISyntaxException | IOException ex) {
-                    Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                String evtValue = evt.getURL().toURI().toString();
+
+                if (evtValue.startsWith(ReportFormatter.APP_URL)) {
+                    String[] tokens = evtValue.replace(ReportFormatter.APP_URL, "").split("/");
+                    String argumentId = tokens[0];
+                    String action = tokens[1];
+                    model.updateModelLabel(argumentId, action);
+
+                } else {
+                    if (Desktop.isDesktopSupported()) {
+                        Desktop.getDesktop().browse(new URI(evtValue));
+                    }
                 }
+
+            } catch (URISyntaxException | IOException ex) {
+                Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }//GEN-LAST:event_txtResultHyperlinkUpdate
+
+    /**
+     * Event: save labels to file.
+     *
+     * @param evt
+     */
+    private void mItemSaveLabelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemSaveLabelsActionPerformed
+        // TODO add your handling code here:
+        model.saveLabelsToFile();
+    }//GEN-LAST:event_mItemSaveLabelsActionPerformed
+
+    /**
+     *
+     * @param evt
+     */
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        closeForm();
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      *
@@ -324,8 +388,10 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private javax.swing.JMenuItem mItemClose;
     private javax.swing.JMenuItem mItemExportHtml;
     private javax.swing.JMenuItem mItemExportText;
+    private javax.swing.JMenuItem mItemSaveLabels;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenu menuFile;
+    private javax.swing.JMenu menuLabel;
     private javax.swing.JPopupMenu.Separator menuSeparator;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTextField txtQuery;

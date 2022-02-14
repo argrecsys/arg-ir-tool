@@ -18,15 +18,20 @@
 package es.uam.irg.io;
 
 import es.uam.irg.utils.FunctionUtils;
-import es.uam.irg.utils.StringUtils;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -38,18 +43,55 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class IOManager {
 
+    private static final String DATESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     *
+     * @param filepath
+     * @return
+     */
+    public static Map<String, String> readDictFromCsvFile(String filepath) {
+        Map<String, String> csvData = new HashMap<>();
+
+        try {
+            File csvFile = new File(filepath);
+
+            if (csvFile.exists() && csvFile.isFile()) {
+                try ( BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
+                    String row;
+                    String id;
+                    String value;
+
+                    reader.readLine();
+                    while ((row = reader.readLine()) != null) {
+                        String[] data = row.split(",");
+
+                        if (data.length == 2) {
+                            id = data[0];
+                            value = data[1];
+                            csvData.put(id, value);
+                        }
+                    }
+                }
+            }
+
+        } catch (IOException ex) {
+            Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return csvData;
+    }
+
     /**
      *
      * @param folderPath
      * @return
      */
     public static Map<String, String> readHtmlReports(String folderPath) {
-        Map<String, String> reports = null;
+        Map<String, String> reports = new HashMap<>();
+        File folder = new File(folderPath);
 
-        if (!StringUtils.isEmpty(folderPath)) {
-            reports = new HashMap<>();
-            File folder = new File(folderPath);
-
+        if (folder.exists() && folder.isDirectory()) {
             for (File fileEntry : folder.listFiles()) {
                 if (fileEntry.isFile()) {
                     Path filepath = Paths.get(fileEntry.getPath());
@@ -87,6 +129,40 @@ public class IOManager {
         }
 
         return data;
+    }
+
+    /**
+     *
+     * @param filepath
+     * @param csvData
+     * @return
+     */
+    public static boolean saveDictFromCsvFile(String filepath, Map<String, String> csvData) {
+        boolean result = false;
+
+        if (csvData.size() > 0) {
+
+            // Add data
+            String header = "arg_id,label,timestamp\n";
+            StringBuilder sb = new StringBuilder(header)  ;          
+            
+            csvData.entrySet().forEach(entry -> {
+                String timeStamp = DateTimeFormatter.ofPattern(DATESTAMP_FORMAT).format(LocalDateTime.now());
+                String file = entry.getKey() + "," + entry.getValue() + "," + timeStamp + "\n";
+                sb.append(file);
+            });
+
+            // Save data
+            try ( PrintWriter out = new PrintWriter(filepath)) {
+                out.println(sb.toString());
+                result = true;
+
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return result;
     }
 
     /**

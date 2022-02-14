@@ -35,6 +35,7 @@ import java.util.Map;
 public class ReportFormatter {
 
     private static final String REPORTS_PATH = "Resources/views/";
+    public static final String APP_URL = "https://argrecsys.github.io/arg-enhanced-ir/";
 
     private final DecimalFormat df;
     private final DateTimeFormatter dtf;
@@ -160,8 +161,7 @@ public class ReportFormatter {
         if (arguments != null) {
             for (Argument arg : arguments) {
                 String[] tokens = arg.getId().split("-");
-                if (Integer.parseInt(tokens[0]) == comment.getProposalId() && Integer.parseInt(tokens[1]) == comment.getId()) {
-
+                if (tokens.length >= 2 && Integer.parseInt(tokens[0]) == comment.getProposalId() && Integer.parseInt(tokens[1]) == comment.getId()) {
                     return arg;
                 }
             }
@@ -179,12 +179,23 @@ public class ReportFormatter {
         if (arguments != null) {
             for (Argument arg : arguments) {
                 String[] tokens = arg.getId().split("-");
-                if (Integer.parseInt(tokens[0]) == proposal.getId() && Integer.parseInt(tokens[1]) == 0) {
+                if (tokens.length >= 2 && Integer.parseInt(tokens[0]) == proposal.getId() && Integer.parseInt(tokens[1]) == 0) {
                     return arg;
                 }
             }
         }
         return null;
+    }
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    private String getValidationPanel(String id) {
+        String report = reports.get("VALIDATE_ARGUMENT");
+        report = report.replace("$ARG_ID$", APP_URL + id);
+        return report;
     }
 
     /**
@@ -200,9 +211,11 @@ public class ReportFormatter {
             String hlClaim = "<span style='padding:3px; background-color: #C7DEFA;'>" + arg.claim.getText() + "</span>";
             String hlPremise = "<span style='padding:3px; background-color: #DED7FB;'>" + arg.premise.getText() + "</span>";
             String hlConnector = "<span style='padding:3px; background-color: #ABD2AC; font-style: italic;'>(" + arg.linker.getText() + ")</span>";
+            String hlValidation = getValidationPanel(arg.getId());
+            String newPremise = hlPremise + " " + hlConnector + " " + hlValidation;
 
             newText = newText.replace(arg.claim.getText(), hlClaim);
-            newText = newText.replace(arg.premise.getText(), hlPremise + " " + hlConnector);
+            newText = newText.replace(arg.premise.getText(), newPremise);
         }
 
         return newText;

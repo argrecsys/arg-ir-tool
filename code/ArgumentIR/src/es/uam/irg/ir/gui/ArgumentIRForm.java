@@ -20,6 +20,7 @@ package es.uam.irg.ir.gui;
 import es.uam.irg.utils.FunctionUtils;
 import java.awt.Desktop;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -289,12 +290,23 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private void txtResultHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_txtResultHyperlinkUpdate
         // TODO add your handling code here:
         if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            if (Desktop.isDesktopSupported()) {
-                try {
-                    Desktop.getDesktop().browse(evt.getURL().toURI());
-                } catch (URISyntaxException | IOException ex) {
-                    Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                String evtValue = evt.getURL().toURI().toString();
+
+                if (evtValue.startsWith(ReportFormatter.APP_URL)) {
+                    String[] tokens = evtValue.replace(ReportFormatter.APP_URL, "").split("/");
+                    String argumentId = tokens[0];
+                    String action = tokens[1];
+                    model.saveValidation(argumentId, action);
+
+                } else {
+                    if (Desktop.isDesktopSupported()) {
+                        Desktop.getDesktop().browse(new URI(evtValue));
+                    }
                 }
+
+            } catch (URISyntaxException | IOException ex) {
+                Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }//GEN-LAST:event_txtResultHyperlinkUpdate

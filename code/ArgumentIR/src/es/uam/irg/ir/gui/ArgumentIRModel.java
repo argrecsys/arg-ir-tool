@@ -24,6 +24,7 @@ import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMCommentTree;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
+import es.uam.irg.io.IOManager;
 import es.uam.irg.ir.InfoRetriever;
 import es.uam.irg.nlp.am.arguments.Argument;
 import es.uam.irg.utils.FunctionUtils;
@@ -40,6 +41,7 @@ import java.util.logging.Logger;
 public class ArgumentIRModel {
 
     // Class constants
+    private static final String LABELS_FILEPATH = "../../results/labels.csv";
     private static final int MAX_TREE_LEVEL = 3;
     private static final boolean VERBOSE = true;
 
@@ -50,6 +52,7 @@ public class ArgumentIRModel {
 
     // Class data variables
     private Map<Integer, ControversyScore> controversyScores;
+    private Map<String, String> labels;
     private Map<Integer, List<Argument>> proposalArguments;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
@@ -71,6 +74,7 @@ public class ArgumentIRModel {
         // Data loading and IR index creation
         loadData();
         createIndex();
+        loadLabels();
     }
 
     /**
@@ -126,6 +130,17 @@ public class ArgumentIRModel {
         }
 
         return result;
+    }
+
+    /**
+     * 
+     * @param argumentId
+     * @param label
+     * @return 
+     */
+    public boolean saveValidation(String argumentId, String label) {
+        labels.put(argumentId, label);
+        return IOManager.saveDictFromCsvFile(LABELS_FILEPATH, labels);
     }
 
     /**
@@ -193,6 +208,14 @@ public class ArgumentIRModel {
         } catch (Exception ex) {
             Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     *
+     */
+    private void loadLabels() {
+        FunctionUtils.printWithDatestamp(">> Loading labels");
+        labels = IOManager.readDictFromCsvFile(LABELS_FILEPATH);
     }
 
     /**

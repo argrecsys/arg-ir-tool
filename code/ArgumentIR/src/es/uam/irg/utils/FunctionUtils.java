@@ -19,6 +19,7 @@ package es.uam.irg.utils;
 
 //import es.uam.irg.io.IOManager;
 import es.uam.irg.io.IOManager;
+import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -69,6 +70,19 @@ public class FunctionUtils {
         }
 
         return result;
+    }
+
+    /**
+     * 
+     * @param color
+     * @return 
+     */
+    public static String colorToHex(Color color) {
+        int r = color.getRed();
+        int g = color.getGreen();
+        int b = color.getBlue();
+        String hex = String.format("#%02x%02x%02x", r, g, b);
+        return hex;
     }
 
     /**

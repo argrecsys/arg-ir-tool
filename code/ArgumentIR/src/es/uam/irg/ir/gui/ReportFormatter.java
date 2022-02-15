@@ -23,6 +23,8 @@ import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
 import es.uam.irg.nlp.am.arguments.Argument;
+import es.uam.irg.utils.FunctionUtils;
+import java.awt.Color;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,8 +36,10 @@ import java.util.Map;
  */
 public class ReportFormatter {
 
-    private static final String REPORTS_PATH = "Resources/views/";
     public static final String APP_URL = "https://argrecsys.github.io/arg-enhanced-ir/";
+    public static final Color HIGHLIGHT_COLOR_CURRENT = new Color(0, 100, 0);
+    public static final Color HIGHLIGHT_COLOR_DEFAULT = Color.BLUE;
+    private static final String REPORTS_PATH = "Resources/views/";
 
     private final DecimalFormat df;
     private final DateTimeFormatter dtf;
@@ -58,17 +62,19 @@ public class ReportFormatter {
      * @param tree
      * @param comments
      * @param arguments
+     * @param labels
      * @return
      */
-    public String getCommentsInfoReport(DMCommentTree tree, Map<Integer, DMComment> comments, List<Argument> arguments) {
+    public String getCommentsInfoReport(DMCommentTree tree, Map<Integer, DMComment> comments, List<Argument> arguments, Map<String, String> labels) {
         String report = "";
 
         if (tree != null) {
             report = reports.get("COMMENT_INFO");
             int nodeId = tree.getId();
+            int leftPadding = tree.getLevel() * 15;
             DMComment currNode = comments.get(nodeId);
             Argument arg = getCommentArgument(currNode, arguments);
-            int leftPadding = tree.getLevel() * 15;
+            String argLabel = getArgumentLabel(arg, labels);
 
             report = report.replace("PADDING-LEFTpx", (leftPadding + "px"));
             report = report.replace("$ID$", "" + nodeId);
@@ -76,10 +82,10 @@ public class ReportFormatter {
             report = report.replace("$VOTES$", "" + currNode.getNumVotes());
             report = report.replace("$NUM_POSITIVE$", "" + currNode.getNumVotesUp());
             report = report.replace("$NUM_NEGATIVE$", "" + currNode.getNumVotesDown());
-            report = report.replace("$TEXT$", highlightArgument(currNode.getText(), arg));
+            report = report.replace("$TEXT$", highlightArgument(currNode.getText(), arg, argLabel));
 
             for (DMCommentTree node : tree.getChildren()) {
-                report += getCommentsInfoReport(node, comments, arguments);
+                report += getCommentsInfoReport(node, comments, arguments, labels);
             }
         }
 
@@ -93,19 +99,22 @@ public class ReportFormatter {
     /**
      * Creates proposal HTML report.
      *
+     * @param ix
      * @param proposal
      * @param summary
      * @param commentTrees
      * @param comments
      * @param arguments
      * @param controversy
+     * @param labels
      * @return
      */
     public String getProposalInfoReport(int ix, DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees,
-            Map<Integer, DMComment> comments, List<Argument> arguments, Double controversy) {
+            Map<Integer, DMComment> comments, List<Argument> arguments, Double controversy, Map<String, String> labels) {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
         Argument arg = getProposalArgument(proposal, arguments);
+        String argLabel = getArgumentLabel(arg, labels);
 
         // Create main report
         report = report.replace("$IX$", "" + ix);
@@ -120,13 +129,13 @@ public class ReportFormatter {
         report = report.replace("$DISTRICTS$", summary.getDistricts());
         report = report.replace("$TOPICS$", summary.getTopics());
         report = report.replace("$URL$", proposal.getUrl());
-        report = report.replace("$SUMMARY$", highlightArgument(proposal.getSummary(), arg));
+        report = report.replace("$SUMMARY$", highlightArgument(proposal.getSummary(), arg, argLabel));
 
         // Add comments
         if (commentTrees != null) {
             String commentReport;
             for (DMCommentTree tree : commentTrees) {
-                commentReport = getCommentsInfoReport(tree, comments, arguments);
+                commentReport = getCommentsInfoReport(tree, comments, arguments, labels);
                 body.append(commentReport);
             }
         }
@@ -149,6 +158,21 @@ public class ReportFormatter {
         result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
         result = result.replace("$CONTENT$", body);
         return result;
+    }
+
+    /**
+     *
+     * @param arg
+     * @param labels
+     * @return
+     */
+    private String getArgumentLabel(Argument arg, Map<String, String> labels) {
+        String label = "";
+        if (arg != null && labels.containsKey(arg.getId())) {
+            label = labels.get(arg.getId());
+            label = label.split(",")[0];
+        }
+        return label;
     }
 
     /**
@@ -192,9 +216,19 @@ public class ReportFormatter {
      * @param id
      * @return
      */
-    private String getValidationPanel(String id) {
+    private String getValidationPanel(String id, String label) {
         String report = reports.get("VALIDATE_ARGUMENT");
-        report = report.replace("$ARG_ID$", APP_URL + id);
+        report = report.replace("ARG_ID", id);
+        report = report.replace("$ARG_LINK$", APP_URL + id);
+
+        String[] options = {"RELEVANT", "NOT_VALID", "VALID"};
+        for (String opt : options) {
+            String tag = opt + "_LINK_COLOR";
+            Color color = (opt.equals(label) ? HIGHLIGHT_COLOR_CURRENT : HIGHLIGHT_COLOR_DEFAULT);
+            String hex = FunctionUtils.colorToHex(color);
+            report = report.replace(tag, hex);
+        }
+
         return report;
     }
 
@@ -204,14 +238,14 @@ public class ReportFormatter {
      * @param argument
      * @return
      */
-    private String highlightArgument(String text, Argument arg) {
+    private String highlightArgument(String text, Argument arg, String label) {
         String newText = text;
 
         if (arg != null) {
             String hlClaim = "<span style='padding:3px; background-color: #C7DEFA;'>" + arg.claim.getText() + "</span>";
             String hlPremise = "<span style='padding:3px; background-color: #DED7FB;'>" + arg.premise.getText() + "</span>";
             String hlConnector = "<span style='padding:3px; background-color: #ABD2AC; font-style: italic;'>(" + arg.linker.getText() + ")</span>";
-            String hlValidation = getValidationPanel(arg.getId());
+            String hlValidation = getValidationPanel(arg.getId(), label);
             String newPremise = hlPremise + " " + hlConnector + " " + hlValidation;
 
             newText = newText.replace(arg.claim.getText(), hlClaim);

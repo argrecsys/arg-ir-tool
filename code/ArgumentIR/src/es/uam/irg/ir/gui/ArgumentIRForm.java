@@ -18,6 +18,7 @@
 package es.uam.irg.ir.gui;
 
 import es.uam.irg.utils.FunctionUtils;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -29,12 +30,18 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.html.HTMLDocument;
 
 /**
  * Argument IR form class.
  */
 public class ArgumentIRForm extends javax.swing.JFrame {
 
+    // GUI constants
     public static final String HTML_CONTENT_TYPE = "text/html";
     public static final String DECIMAL_FORMAT = "0.000";
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -53,7 +60,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     }
 
     /**
-     *
+     * Closes winform.
      */
     private void closeForm() {
         if (model.isDirty()) {
@@ -63,6 +70,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         }
         this.setVisible(false);
         this.dispose();
+        System.exit(0);
     }
 
     /**
@@ -92,6 +100,40 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         String nTopOption = this.cmbTop.getSelectedItem().toString();
         int nTop = (nTopOption.equals("All") ? Integer.MAX_VALUE : Integer.parseInt(nTopOption));
         return nTop;
+    }
+
+    /**
+     *
+     * @param doc
+     * @param el
+     * @param color
+     */
+    private void changeColor(HTMLDocument doc, Element el, Color color) {
+        int start = el.getStartOffset();
+        int end = el.getEndOffset();
+        StyleContext ss = doc.getStyleSheet();
+        Style style = ss.addStyle("HighlightedHyperlink", null);
+        style.addAttribute(StyleConstants.Foreground, color);
+        doc.setCharacterAttributes(start, end - start, style, false);
+
+    }
+
+    /**
+     *
+     * @param argumentId
+     * @param target
+     * @throws BadLocationException
+     */
+    private void highlightElements(String argumentId, Element target) throws BadLocationException {
+        HTMLDocument html = (HTMLDocument) txtResult.getDocument();
+        String[] options = {"relevant", "valid", "not-valid"};
+
+        for (String tag : options) {
+            String elemId = argumentId + "-" + tag;
+            Element elem = html.getElement(elemId);
+            Color linkColor = (elem.equals(target) ? ReportFormatter.HIGHLIGHT_COLOR_CURRENT : ReportFormatter.HIGHLIGHT_COLOR_DEFAULT);
+            changeColor(html, elem, linkColor);
+        }
     }
 
     /**
@@ -332,13 +374,16 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     String action = tokens[1];
                     model.updateModelLabel(argumentId, action);
 
+                    // Highlight links
+                    highlightElements(argumentId, evt.getSourceElement());
+
                 } else {
                     if (Desktop.isDesktopSupported()) {
                         Desktop.getDesktop().browse(new URI(evtValue));
                     }
                 }
 
-            } catch (URISyntaxException | IOException ex) {
+            } catch (URISyntaxException | IOException | BadLocationException ex) {
                 Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

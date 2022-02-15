@@ -1,13 +1,13 @@
 # Arguments-enhanced IR
 ![version](https://img.shields.io/badge/version-0.8.5-blue)
-![last-update](https://img.shields.io/badge/last_update-2/14/2022-orange)
+![last-update](https://img.shields.io/badge/last_update-2/15/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 Argument-enhanced information retrieval project repository. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
 
-The search runs on Apache Lucene and re-ranks the results (proposals) according to the number of arguments (previously extracted) they have.
+We present a tool that not only allows to retrieve argumentative information, but also to validate the returned arguments. The search runs on Apache Lucene and the results (proposals and comments) are re-ranked according to the number of arguments they have.
 
-This project uses the arguments previously extracted (from the citizen proposals of the Decide Madrid platform) in the <a  href="https://github.com/argrecsys/arg-miner" target="_blank">argrecsys/arg-miner</a> repository.
+This project takes advantage of the arguments previously extracted (from the citizen proposals of the Decide Madrid platform) in the <a  href="https://github.com/argrecsys/arg-miner" target="_blank">argrecsys/arg-miner</a> repository.
 
 ## Screenshots
 ![arg-ir-gui](https://raw.githubusercontent.com/argrecsys/arg-enhanced-ir/main/images/gui.gif)

@@ -170,7 +170,7 @@ public class ArgumentIRModel {
     }
 
     /**
-     *
+     * Creates an Apache Lucene index of the data.
      */
     private void createIndex() {
         FunctionUtils.printWithDatestamp(">> Creating Lucene index");
@@ -179,7 +179,7 @@ public class ArgumentIRModel {
     }
 
     /**
-     *
+     * Loads all data (proposals, comments, arguments, labels).
      */
     private void loadData() {
         try {

@@ -26,7 +26,6 @@ import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.BadLocationException;
@@ -53,10 +52,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     public ArgumentIRForm() {
         initComponents();
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        this.txtResult.setContentType(HTML_CONTENT_TYPE);
-        this.txtResult.setEditable(false);
         this.model = new ArgumentIRModel(DECIMAL_FORMAT, DATE_FORMAT);
+        this.setVisible(true);
     }
 
     /**
@@ -71,6 +68,22 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         this.setVisible(false);
         this.dispose();
         System.exit(0);
+    }
+
+    /**
+     *
+     * @param type
+     */
+    private void exportReportToFile(String type) {
+        try {
+            String filepath = selectFileToExport(type);
+            String header = getReportHeader(type);
+            String text = header + (type.equals("html") ? this.txtResult.getText() : this.txtResult.getDocument().getText(0, this.txtResult.getDocument().getLength()));
+            FunctionUtils.writeStringToFile(filepath, text);
+
+        } catch (BadLocationException ex) {
+            Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -166,7 +179,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
 
         fileChooser.setDialogTitle("Export report");
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Argument-enhanced Information Retrieval");
         setMinimumSize(new java.awt.Dimension(800, 400));
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -187,6 +200,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
             }
         });
 
+        txtResult.setEditable(false);
+        txtResult.setContentType(HTML_CONTENT_TYPE);
         txtResult.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
             public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
                 txtResultHyperlinkUpdate(evt);
@@ -333,10 +348,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     private void mItemExportHtmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemExportHtmlActionPerformed
         // TODO add your handling code here:
-        String filepath = selectExportFile("html");
-        String header = getReportHeader("html");
-        String html = header + this.txtResult.getText();
-        FunctionUtils.writeStringToFile(filepath, html);
+        exportReportToFile("html");
     }//GEN-LAST:event_mItemExportHtmlActionPerformed
 
     /**
@@ -345,16 +357,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      * @param evt
      */
     private void mItemExportTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemExportTextActionPerformed
-        try {
-            // TODO add your handling code here:
-            String filepath = selectExportFile("txt");
-            String header = getReportHeader("txt");
-            String text = header + this.txtResult.getDocument().getText(0, this.txtResult.getDocument().getLength());
-            FunctionUtils.writeStringToFile(filepath, text);
-
-        } catch (BadLocationException ex) {
-            Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        // TODO add your handling code here:
+        exportReportToFile("txt");
     }//GEN-LAST:event_mItemExportTextActionPerformed
 
     /**
@@ -412,7 +416,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      *
      * @return
      */
-    private String selectExportFile(String ext) {
+    private String selectFileToExport(String ext) {
         String filepath = fileChooser.getCurrentDirectory() + "\\report N." + ext;
         fileChooser.setSelectedFile(new java.io.File(filepath));
         if (fileChooser.showDialog(this, "Save") == JFileChooser.APPROVE_OPTION) {

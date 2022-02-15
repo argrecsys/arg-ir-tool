@@ -33,6 +33,9 @@ public class ArgumentIR {
         showWinform();
     }
 
+    /**
+     * Creates and displays the Argument-IR form.
+     */
     private static void showWinform() {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -48,10 +51,7 @@ public class ArgumentIR {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
             FunctionUtils.printWithDatestamp(">> ARG-IR BEGINS");
-
-            ArgumentIRForm form = new ArgumentIRForm();
-            form.setVisible(true);
-
+            new ArgumentIRForm();
             FunctionUtils.printWithDatestamp(">> ARG-IR ENDS");
         });
     }

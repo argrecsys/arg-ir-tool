@@ -17,6 +17,7 @@
  */
 package es.uam.irg.io;
 
+import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.utils.FunctionUtils;
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,7 +31,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,8 +49,8 @@ public class IOManager {
      * @param filepath
      * @return
      */
-    public static Map<String, String> readDictFromCsvFile(String filepath) {
-        Map<String, String> csvData = new HashMap<>();
+    public static Map<String, ArgumentLabel> readDictFromCsvFile(String filepath) {
+        Map<String, ArgumentLabel> csvData = new HashMap<>();
 
         try {
             File csvFile = new File(filepath);
@@ -55,21 +58,21 @@ public class IOManager {
             if (csvFile.exists() && csvFile.isFile()) {
                 try ( BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
                     String row;
+                    ArgumentLabel label;
                     String id;
-                    String label;
-                    String timestamp;
                     String value;
+                    String timestamp;
 
                     reader.readLine();
                     while ((row = reader.readLine()) != null) {
                         String[] data = row.split(",");
 
-                        if (data.length == 3) {
-                            id = data[0];
-                            label = data[1];
-                            timestamp = data[2];
-                            value = label + "," + timestamp;
-                            csvData.put(id, value);
+                        if (data.length == 4) {
+                            id = data[1];
+                            value = data[2];
+                            timestamp = data[3];
+                            label = new ArgumentLabel(id, value, timestamp);
+                            csvData.put(id, label);
                         }
                     }
                 }
@@ -136,19 +139,26 @@ public class IOManager {
      * @param filepath
      * @param header
      * @param csvData
+     * @param sorted
      * @return
      */
-    public static boolean saveDictToCsvFile(String filepath, String header, Map<String, String> csvData) {
+    public static boolean saveDictToCsvFile(String filepath, String[] header, Map<String, ArgumentLabel> csvData, boolean sorted) {
         boolean result = false;
 
         if (csvData.size() > 0) {
 
+            // Sorting data
+            if (sorted) {
+                csvData = sortLabelData(csvData);
+            }
+
             // Add data
-            StringBuilder sb = new StringBuilder(header);
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.join(",", header)).append("\n");
 
             csvData.entrySet().forEach(entry -> {
-                String file = entry.getKey() + "," + entry.getValue() + "\n";
-                sb.append(file);
+                ArgumentLabel label = entry.getValue();
+                sb.append(label.toString()).append("\n");
             });
 
             // Save data
@@ -187,6 +197,23 @@ public class IOManager {
             Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
         }
         return content;
+    }
+
+    /**
+     *
+     * @param map
+     * @return
+     */
+    private static Map<String, ArgumentLabel> sortLabelData(Map<String, ArgumentLabel> map) {
+        LinkedHashMap<String, ArgumentLabel> reverseSortedMap = new LinkedHashMap<>();
+
+        // Use Comparator.reverseOrder() for reverse ordering
+        map.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue((v1, v2) -> Integer.compare(v1.getProposalId(), v2.getProposalId())))
+                .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
+
+        return reverseSortedMap;
     }
 
 }

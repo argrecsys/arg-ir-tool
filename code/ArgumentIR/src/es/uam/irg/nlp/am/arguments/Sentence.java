@@ -56,6 +56,10 @@ public class Sentence {
 
         return doc;
     }
+    
+    public List<String> getEntities() {
+        return this.entities;
+    }
 
     public JSONObject getJSON() {
         JSONObject json = new JSONObject();

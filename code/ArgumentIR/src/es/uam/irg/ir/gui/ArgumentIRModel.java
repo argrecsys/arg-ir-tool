@@ -94,7 +94,7 @@ public class ArgumentIRModel {
      * @param reRankBy
      * @return
      */
-    public String getQueryResult(String query, int nTop, String reRankBy) {
+    public String getQueryResult(String query, String reRankBy, int nTop) {
         String result = "";
 
         if (query.isEmpty()) {
@@ -107,9 +107,9 @@ public class ArgumentIRModel {
 
             // 1. Query and rerank data
             start = System.nanoTime();
-            List<Integer> ids = this.retriever.queryData(query, nTop);
+            List<Integer> ids = this.retriever.queryData(query);
             FunctionUtils.printWithDatestamp(">> Found " + ids.size() + " hits");
-            List<Integer> docList = sortResults(ids, reRankBy);
+            List<Integer> docList = rankResults(ids, reRankBy, nTop);
             FunctionUtils.printWithDatestamp(">> Data reranked by: " + reRankBy);
             finish = System.nanoTime();
             timeElapsed1 = (int) ((finish - start) / 1000000);
@@ -242,12 +242,14 @@ public class ArgumentIRModel {
     }
 
     /**
+     * Ranks the results and returns the N top records according to a specified
+     * criterion.
      *
      * @param docs
      * @param reRankBy
      * @return
      */
-    private List<Integer> sortResults(List<Integer> ids, String reRankBy) {
+    private List<Integer> rankResults(List<Integer> ids, String reRankBy, int nTop) {
         List<Integer> docList = new ArrayList<>();
 
         if (ids.size() > 0 && !StringUtils.isEmpty(reRankBy)) {
@@ -274,7 +276,7 @@ public class ArgumentIRModel {
             }
         }
 
-        return docList;
+        return docList.stream().limit(nTop).toList();
     }
 
 }

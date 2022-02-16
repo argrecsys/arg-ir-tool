@@ -24,6 +24,7 @@ import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
 import es.uam.irg.nlp.am.arguments.Argument;
 import es.uam.irg.nlp.am.arguments.ArgumentLabel;
+import es.uam.irg.nlp.am.arguments.Sentence;
 import es.uam.irg.utils.FunctionUtils;
 import java.awt.Color;
 import java.text.DecimalFormat;
@@ -37,6 +38,7 @@ import java.util.Map;
  */
 public class ReportFormatter {
 
+    // Class constants
     public static final String APP_URL = "https://argrecsys.github.io/arg-enhanced-ir/";
     public static final Color HIGHLIGHT_COLOR_CURRENT = new Color(0, 100, 0);
     public static final Color HIGHLIGHT_COLOR_DEFAULT = Color.BLUE;
@@ -93,6 +95,10 @@ public class ReportFormatter {
         return report;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getNoValidQueryReport() {
         return reports.get("NO_VALID_QUERY");
     }
@@ -216,6 +222,23 @@ public class ReportFormatter {
 
     /**
      *
+     * @param sent
+     * @return
+     */
+    private String getSentenceText(Sentence sent) {
+        String text = sent.getText();
+        for (String entity : sent.getEntities()) {
+            entity = entity.trim();
+            if (!entity.isEmpty() && !entity.startsWith("https")) {
+                text = text.replace(entity, "<strong>" + entity + "</strong>");
+                System.out.println(entity);
+            }
+        }
+        return text;
+    }
+
+    /**
+     *
      * @param id
      * @return
      */
@@ -245,8 +268,10 @@ public class ReportFormatter {
         String newText = text;
 
         if (arg != null) {
-            String hlClaim = "<span style='padding:3px; background-color: #C7DEFA;'>" + arg.claim.getText() + "</span>";
-            String hlPremise = "<span style='padding:3px; background-color: #DED7FB;'>" + arg.premise.getText() + "</span>";
+            String claim = getSentenceText(arg.claim);
+            String premise = getSentenceText(arg.premise);
+            String hlClaim = "<span style='padding:3px; background-color: #C7DEFA;'>" + claim + "</span>";
+            String hlPremise = "<span style='padding:3px; background-color: #DED7FB;'>" + premise + "</span>";
             String hlConnector = "<span style='padding:3px; background-color: #ABD2AC; font-style: italic;'>(" + arg.linker.getText() + ")</span>";
             String hlValidation = getValidationPanel(arg.getId(), label);
             String newPremise = hlPremise + " " + hlConnector + " " + hlValidation;

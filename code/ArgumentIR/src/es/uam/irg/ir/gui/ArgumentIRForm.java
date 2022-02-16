@@ -128,7 +128,6 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         Style style = ss.addStyle("HighlightedHyperlink", null);
         style.addAttribute(StyleConstants.Foreground, color);
         doc.setCharacterAttributes(start, end - start, style, false);
-
     }
 
     /**
@@ -320,11 +319,10 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // TODO add your handling code here:
         String query = this.txtQuery.getText().trim();
-        int nTop = getTopRecordsOption();
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
-
+        int nTop = getTopRecordsOption();
         // Query data
-        String result = this.model.getQueryResult(query, nTop, reRankBy);
+        String result = this.model.getQueryResult(query, reRankBy, nTop);
 
         // Display report
         this.txtResult.setText(result);

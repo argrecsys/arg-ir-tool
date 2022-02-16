@@ -106,10 +106,9 @@ public class InfoRetriever {
      * information need (query).
      *
      * @param querystr
-     * @param hitsPerPage
      * @return
      */
-    public List<Integer> queryData(String querystr, int hitsPerPage) {
+    public List<Integer> queryData(String querystr) {
         List<Integer> docList = new ArrayList<>();
 
         try {
@@ -119,7 +118,7 @@ public class InfoRetriever {
             // Search within the index
             try ( IndexReader reader = DirectoryReader.open(index)) {
                 IndexSearcher searcher = new IndexSearcher(reader);
-                TopDocs docs = searcher.search(q, hitsPerPage);
+                TopDocs docs = searcher.search(q, Integer.MAX_VALUE);
                 ScoreDoc[] hits = docs.scoreDocs;
 
                 // Store results

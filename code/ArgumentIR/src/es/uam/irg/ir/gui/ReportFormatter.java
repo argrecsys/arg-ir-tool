@@ -23,6 +23,7 @@ import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
 import es.uam.irg.nlp.am.arguments.Argument;
+import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.utils.FunctionUtils;
 import java.awt.Color;
 import java.text.DecimalFormat;
@@ -65,7 +66,7 @@ public class ReportFormatter {
      * @param labels
      * @return
      */
-    public String getCommentsInfoReport(DMCommentTree tree, Map<Integer, DMComment> comments, List<Argument> arguments, Map<String, String> labels) {
+    public String getCommentsInfoReport(DMCommentTree tree, Map<Integer, DMComment> comments, List<Argument> arguments, Map<String, ArgumentLabel> labels) {
         String report = "";
 
         if (tree != null) {
@@ -110,7 +111,7 @@ public class ReportFormatter {
      * @return
      */
     public String getProposalInfoReport(int ix, DMProposal proposal, DMProposalSummary summary, List<DMCommentTree> commentTrees,
-            Map<Integer, DMComment> comments, List<Argument> arguments, Double controversy, Map<String, String> labels) {
+            Map<Integer, DMComment> comments, List<Argument> arguments, Double controversy, Map<String, ArgumentLabel> labels) {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
         Argument arg = getProposalArgument(proposal, arguments);
@@ -168,13 +169,13 @@ public class ReportFormatter {
      * @param labels
      * @return
      */
-    private String getArgumentLabel(Argument arg, Map<String, String> labels) {
-        String label = "";
+    private String getArgumentLabel(Argument arg, Map<String, ArgumentLabel> labels) {
+        String value = "";
         if (arg != null && labels.containsKey(arg.getId())) {
-            label = labels.get(arg.getId());
-            label = label.split(",")[0];
+            ArgumentLabel label = labels.get(arg.getId());
+            value = label.getLabel();
         }
-        return label;
+        return value;
     }
 
     /**

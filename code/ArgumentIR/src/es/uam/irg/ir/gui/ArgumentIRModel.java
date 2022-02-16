@@ -27,6 +27,7 @@ import es.uam.irg.decidemadrid.entities.DMProposalSummary;
 import es.uam.irg.io.IOManager;
 import es.uam.irg.ir.InfoRetriever;
 import es.uam.irg.nlp.am.arguments.Argument;
+import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.utils.FunctionUtils;
 import es.uam.irg.utils.StringUtils;
 import java.time.LocalDateTime;
@@ -44,6 +45,7 @@ import java.util.logging.Logger;
 public class ArgumentIRModel {
 
     // Class constants
+    private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "label", "timestamp"};
     private static final String LABELS_FILEPATH = "../../results/labels.csv";
     private static final int MAX_TREE_LEVEL = 3;
 
@@ -56,10 +58,10 @@ public class ArgumentIRModel {
     // Class data variables
     private Map<Integer, ControversyScore> controversyScores;
     private boolean isDirty;
-    private Map<String, String> labels;
     private Map<Integer, List<Argument>> proposalArguments;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
+    private Map<String, ArgumentLabel> proposalLabels;
     private Map<Integer, DMProposalSummary> proposalSummaries;
     private Map<Integer, DMProposal> proposals;
     private InfoRetriever retriever;
@@ -123,7 +125,7 @@ public class ArgumentIRModel {
                 List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
                 double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId).getValue() : 0.0);
 
-                String report = this.formatter.getProposalInfoReport((i + 1), proposal, summary, commentTrees, proposalComments, arguments, controversy, labels);
+                String report = this.formatter.getProposalInfoReport((i + 1), proposal, summary, commentTrees, proposalComments, arguments, controversy, proposalLabels);
                 body.append(report);
             }
             finish = System.nanoTime();
@@ -150,8 +152,7 @@ public class ArgumentIRModel {
      * @return
      */
     public boolean saveLabelsToFile() {
-        String header = "arg_id,label,timestamp\n";
-        boolean result = IOManager.saveDictToCsvFile(LABELS_FILEPATH, header, labels);
+        boolean result = IOManager.saveDictToCsvFile(LABELS_FILEPATH, CSV_FILE_HEADER, proposalLabels, true);
         isDirty = !result;
         return result;
     }
@@ -159,14 +160,14 @@ public class ArgumentIRModel {
     /**
      *
      * @param argumentId
-     * @param label
+     * @param value
      */
-    public void updateModelLabel(String argumentId, String label) {
+    public void updateModelLabel(String argumentId, String value) {
         String timeStamp = DateTimeFormatter.ofPattern(dateFormat).format(LocalDateTime.now());
-        String value = label + "," + timeStamp;
-        labels.put(argumentId, value);
+        ArgumentLabel label = new ArgumentLabel(argumentId, value, timeStamp);
+        proposalLabels.put(argumentId, label);
         isDirty = true;
-        FunctionUtils.printWithDatestamp(" - Argument '" + argumentId + "' has been annotated as " + label);
+        FunctionUtils.printWithDatestamp(" - Argument '" + argumentId + "' has been annotated as " + value);
     }
 
     /**
@@ -236,8 +237,8 @@ public class ArgumentIRModel {
      */
     private void loadLabels() {
         FunctionUtils.printWithDatestamp(">> Loading labels");
-        labels = IOManager.readDictFromCsvFile(LABELS_FILEPATH);
-        FunctionUtils.printWithDatestamp(" - Number of labels: " + labels.size());
+        proposalLabels = IOManager.readDictFromCsvFile(LABELS_FILEPATH);
+        FunctionUtils.printWithDatestamp(" - Number of argument labels: " + proposalLabels.size());
     }
 
     /**

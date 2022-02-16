@@ -146,15 +146,17 @@ public class ReportFormatter {
 
     /**
      *
-     * @param nReports
-     * @param timeElapsed
      * @param body
+     * @param nReports
+     * @param timeElapsed1
+     * @param timeElapsed2
      * @return
      */
-    public String getProposalsReport(int nReports, int timeElapsed, String body) {
+    public String getProposalsReport(String body, int nReports, int timeElapsed1, int timeElapsed2) {
         String result = reports.get("PROPOSAL_LIST");
         result = result.replace("$N_REPORTS$", "" + nReports);
-        result = result.replace("$TIME_ELAPSED$", "" + timeElapsed);
+        result = result.replace("$TIME_ELAPSED_1$", "" + timeElapsed1);
+        result = result.replace("$TIME_ELAPSED_2$", "" + timeElapsed2);
         result = result.replace("$CURRENT_TIME$", dtf.format(LocalDateTime.now()));
         result = result.replace("$CONTENT$", body);
         return result;

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  * Class with a set of static utility functions.
@@ -73,9 +74,9 @@ public class FunctionUtils {
     }
 
     /**
-     * 
+     *
      * @param color
-     * @return 
+     * @return
      */
     public static String colorToHex(Color color) {
         int r = color.getRed();
@@ -149,7 +150,11 @@ public class FunctionUtils {
      * @param msg
      */
     public static void printWithDatestamp(String msg) {
-        System.out.println(msg + " - " + dateFormat.format(new Date()));
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                System.out.println(msg + " - " + dateFormat.format(new Date()));
+            }
+        });
     }
 
     /**

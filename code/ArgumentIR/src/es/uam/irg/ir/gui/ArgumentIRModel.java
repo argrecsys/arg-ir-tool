@@ -28,6 +28,7 @@ import es.uam.irg.io.IOManager;
 import es.uam.irg.ir.InfoRetriever;
 import es.uam.irg.nlp.am.arguments.Argument;
 import es.uam.irg.utils.FunctionUtils;
+import es.uam.irg.utils.StringUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -98,40 +99,39 @@ public class ArgumentIRModel {
             result = this.formatter.getNoValidQueryReport();
 
         } else {
-            // Query data
-            long start = System.nanoTime();
-            List<Integer> ids = this.retriever.queryData(query, nTop);
-            long finish = System.nanoTime();
-            int timeElapsed = (int) ((finish - start) / 1000000);
-            int nReports = ids.size();
-            FunctionUtils.printWithDatestamp(">> Found " + nReports + " hits in " + timeElapsed + " ms");
+            // Elapsed time variables
+            long start, finish;
+            int timeElapsed1 = 0, timeElapsed2 = 0;
 
-            // Rerank data
+            // 1. Query and rerank data
+            start = System.nanoTime();
+            List<Integer> ids = this.retriever.queryData(query, nTop);
+            FunctionUtils.printWithDatestamp(">> Found " + ids.size() + " hits");
             List<Integer> docList = sortResults(ids, reRankBy);
             FunctionUtils.printWithDatestamp(">> Data reranked by: " + reRankBy);
+            finish = System.nanoTime();
+            timeElapsed1 = (int) ((finish - start) / 1000000);
 
-            // Create user report
-            if (docList.size() > 0) {
-                StringBuilder body = new StringBuilder();
-                String report;
+            // 2. Create user report
+            start = System.nanoTime();
+            StringBuilder body = new StringBuilder();
+            for (int i = 0; i < docList.size(); i++) {
+                int docId = docList.get(i);
+                DMProposal proposal = proposals.get(docId);
+                DMProposalSummary summary = proposalSummaries.get(docId);
+                List<DMCommentTree> commentTrees = proposalCommentTrees.get(docId);
+                List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
+                double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId).getValue() : 0.0);
 
-                // Format data
-                for (int i = 0; i < docList.size(); i++) {
-                    int docId = docList.get(i);
-                    DMProposal proposal = proposals.get(docId);
-                    DMProposalSummary summary = proposalSummaries.get(docId);
-                    List<DMCommentTree> commentTrees = proposalCommentTrees.get(docId);
-                    List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
-                    double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId).getValue() : 0.0);
-
-                    report = this.formatter.getProposalInfoReport((i + 1), proposal, summary, commentTrees, proposalComments, arguments, controversy, labels);
-                    body.append(report);
-                }
-                result = body.toString();
+                String report = this.formatter.getProposalInfoReport((i + 1), proposal, summary, commentTrees, proposalComments, arguments, controversy, labels);
+                body.append(report);
             }
+            finish = System.nanoTime();
+            timeElapsed2 = (int) ((finish - start) / 1000000);
 
             // Update final report
-            result = this.formatter.getProposalsReport(nReports, timeElapsed, result);
+            result = this.formatter.getProposalsReport(body.toString(), docList.size(), timeElapsed1, timeElapsed2);
+            FunctionUtils.printWithDatestamp(">> The results report has been created");
         }
 
         return result;
@@ -249,26 +249,28 @@ public class ArgumentIRModel {
     private List<Integer> sortResults(List<Integer> ids, String reRankBy) {
         List<Integer> docList = new ArrayList<>();
 
-        if (reRankBy.equals("Nothing")) {
-            docList.addAll(ids);
+        if (ids.size() > 0 && !StringUtils.isEmpty(reRankBy)) {
+            if (reRankBy.equals("Nothing")) {
+                docList.addAll(ids);
 
-        } else if (reRankBy.equals("Arguments")) {
-            Map<Integer, Integer> argsByProp = new HashMap<>();
+            } else if (reRankBy.equals("Arguments")) {
+                Map<Integer, Integer> argsByProp = new HashMap<>();
 
-            for (int id : ids) {
-                int nArgs = (proposalArguments.containsKey(id) ? proposalArguments.get(id).size() : 0);
-                argsByProp.put(id, nArgs);
+                for (int id : ids) {
+                    int nArgs = (proposalArguments.containsKey(id) ? proposalArguments.get(id).size() : 0);
+                    argsByProp.put(id, nArgs);
+                }
+                docList.addAll(FunctionUtils.sortMapByIntValue(argsByProp).keySet());
+
+            } else if (reRankBy.equals("Controversy")) {
+                Map<Integer, Double> controvByProp = new HashMap<>();
+
+                for (int id : ids) {
+                    double score = (controversyScores.containsKey(id) ? controversyScores.get(id).getValue() : 0.0);
+                    controvByProp.put(id, score);
+                }
+                docList.addAll(FunctionUtils.sortMapByDblValue(controvByProp).keySet());
             }
-            docList.addAll(FunctionUtils.sortMapByIntValue(argsByProp).keySet());
-
-        } else if (reRankBy.equals("Controversy")) {
-            Map<Integer, Double> controvByProp = new HashMap<>();
-
-            for (int id : ids) {
-                double score = (controversyScores.containsKey(id) ? controversyScores.get(id).getValue() : 0.0);
-                controvByProp.put(id, score);
-            }
-            docList.addAll(FunctionUtils.sortMapByDblValue(controvByProp).keySet());
         }
 
         return docList;

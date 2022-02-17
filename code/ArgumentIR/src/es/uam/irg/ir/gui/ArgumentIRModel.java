@@ -86,6 +86,24 @@ public class ArgumentIRModel {
     }
 
     /**
+     *
+     * @param id
+     * @return
+     */
+    public DMComment getComment(int id) {
+        return this.proposalComments.get(id);
+    }
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    public DMProposal getProposal(int id) {
+        return this.proposals.get(id);
+    }
+
+    /**
      * Function that queries the data to the index (Apache Lucene) and returns a
      * valid report.
      *

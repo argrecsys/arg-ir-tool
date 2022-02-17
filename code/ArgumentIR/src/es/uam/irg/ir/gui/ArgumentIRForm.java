@@ -45,6 +45,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public static final String DECIMAL_FORMAT = "0.000";
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+    private final AnnotationForm form;
     private final ArgumentIRModel model;
 
     /**
@@ -52,6 +53,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     public ArgumentIRForm() {
         initComponents();
+        this.form = new AnnotationForm();
         this.model = new ArgumentIRModel(DECIMAL_FORMAT, DATE_FORMAT);
         this.setVisible(true);
     }
@@ -372,14 +374,31 @@ public class ArgumentIRForm extends javax.swing.JFrame {
 
                 if (evtValue.startsWith(ReportFormatter.APP_URL)) {
                     String[] tokens = evtValue.replace(ReportFormatter.APP_URL, "").split("/");
-                    String argumentId = tokens[0];
-                    String action = tokens[1];
-                    model.updateModelLabel(argumentId, action);
+                    String action = tokens[0];
 
-                    // Highlight links
-                    highlightElements(argumentId, evt.getSourceElement());
+                    if (action.equals(ReportFormatter.MODE_VALIDATE)) {
+                        String argumentId = tokens[1];
+                        String value = tokens[2];
+                        System.out.println(" - Action: " + action + ", argumentId: " + argumentId + ", value: " + value);
+
+                        model.updateModelLabel(argumentId, value);
+                        highlightElements(argumentId, evt.getSourceElement());
+
+                    } else if (action.equals(ReportFormatter.MODE_ANNOTATE)) {
+                        String mode = tokens[1];
+                        int id = Integer.parseInt(tokens[2]);
+                        System.out.println(" - Action: " + action + ", mode: " + mode + ", id: " + id);
+
+                        if (mode.equals("PROPOSAL")) {
+                            form.showRecord(model.getProposal(id));
+
+                        } else if (mode.equals("COMMENT")) {
+                            form.showRecord(model.getComment(id));
+                        }
+                    }
 
                 } else {
+                    // Open a regular URL
                     if (Desktop.isDesktopSupported()) {
                         Desktop.getDesktop().browse(new URI(evtValue));
                     }

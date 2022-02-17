@@ -39,13 +39,16 @@ import java.util.Map;
 public class ReportFormatter {
 
     // Class constants
-    public static final String APP_URL = "https://argrecsys.github.io/arg-enhanced-ir/";
+    public static final String APP_URL = "https://www.web.es/";
+    public static final String MODE_ANNOTATE = "ANNOTATE";
+    public static final String MODE_VALIDATE = "VALIDATE";
     public static final Color HIGHLIGHT_COLOR_CURRENT = new Color(0, 100, 0);
     public static final Color HIGHLIGHT_COLOR_DEFAULT = Color.BLUE;
     private static final String REPORTS_PATH = "Resources/views/";
 
     private final DecimalFormat df;
     private final DateTimeFormatter dtf;
+    private final String imgPath;
     private Map<String, String> reports;
 
     /**
@@ -56,6 +59,7 @@ public class ReportFormatter {
     public ReportFormatter(String decimalFormat, String dateFormat) {
         this.df = new DecimalFormat(decimalFormat);
         this.dtf = DateTimeFormatter.ofPattern(dateFormat);
+        this.imgPath = getClass().getClassLoader().getResource("views/img/edit.png").getFile();
         loadReports();
     }
 
@@ -78,6 +82,7 @@ public class ReportFormatter {
             DMComment currNode = comments.get(nodeId);
             Argument arg = getCommentArgument(currNode, arguments);
             String argLabel = getArgumentLabel(arg, labels);
+            String btAnnotate = "<a href='" + APP_URL + MODE_ANNOTATE + "/COMMENT/" + nodeId + "'><img src='file:" + imgPath + "' border=0></img></a>";
 
             report = report.replace("PADDING-LEFTpx", (leftPadding + "px"));
             report = report.replace("$ID$", "" + nodeId);
@@ -85,7 +90,7 @@ public class ReportFormatter {
             report = report.replace("$VOTES$", "" + currNode.getNumVotes());
             report = report.replace("$NUM_POSITIVE$", "" + currNode.getNumVotesUp());
             report = report.replace("$NUM_NEGATIVE$", "" + currNode.getNumVotesDown());
-            report = report.replace("$TEXT$", highlightArgument(currNode.getText(), arg, argLabel));
+            report = report.replace("$TEXT$", btAnnotate + " " + highlightArgument(currNode.getText(), arg, argLabel));
 
             for (DMCommentTree node : tree.getChildren()) {
                 report += getCommentsInfoReport(node, comments, arguments, labels);
@@ -122,6 +127,7 @@ public class ReportFormatter {
         StringBuilder body = new StringBuilder();
         Argument arg = getProposalArgument(proposal, arguments);
         String argLabel = getArgumentLabel(arg, labels);
+        String btAnnotate = "<a href='" + APP_URL + MODE_ANNOTATE + "/PROPOSAL/" + proposal.getId() + "'><img src='file:" + imgPath + "' border=0></img></a>";
 
         // Create main report
         report = report.replace("$IX$", "" + ix);
@@ -136,7 +142,7 @@ public class ReportFormatter {
         report = report.replace("$DISTRICTS$", summary.getDistricts());
         report = report.replace("$TOPICS$", summary.getTopics());
         report = report.replace("$URL$", proposal.getUrl());
-        report = report.replace("$SUMMARY$", highlightArgument(proposal.getSummary(), arg, argLabel));
+        report = report.replace("$SUMMARY$", btAnnotate + " " + highlightArgument(proposal.getSummary(), arg, argLabel));
 
         // Add comments
         if (commentTrees != null) {
@@ -231,7 +237,6 @@ public class ReportFormatter {
             entity = entity.trim();
             if (!entity.isEmpty() && !entity.startsWith("https")) {
                 text = text.replace(entity, "<strong>" + entity + "</strong>");
-                System.out.println(entity);
             }
         }
         return text;
@@ -245,7 +250,7 @@ public class ReportFormatter {
     private String getValidationPanel(String id, String label) {
         String report = reports.get("VALIDATE_ARGUMENT");
         report = report.replace("ARG_ID", id);
-        report = report.replace("$ARG_LINK$", APP_URL + id);
+        report = report.replace("$ARG_LINK$", APP_URL + MODE_VALIDATE + "/" + id);
 
         String[] options = {"RELEVANT", "NOT_VALID", "VALID"};
         for (String opt : options) {
@@ -274,10 +279,9 @@ public class ReportFormatter {
             String hlPremise = "<span style='padding:3px; background-color: #DED7FB;'>" + premise + "</span>";
             String hlConnector = "<span style='padding:3px; background-color: #ABD2AC; font-style: italic;'>(" + arg.linker.getText() + ")</span>";
             String hlValidation = getValidationPanel(arg.getId(), label);
-            String newPremise = hlPremise + " " + hlConnector + " " + hlValidation;
 
             newText = newText.replace(arg.claim.getText(), hlClaim);
-            newText = newText.replace(arg.premise.getText(), newPremise);
+            newText = newText.replace(arg.premise.getText(), hlPremise + " " + hlConnector + " " + hlValidation);
         }
 
         return newText;

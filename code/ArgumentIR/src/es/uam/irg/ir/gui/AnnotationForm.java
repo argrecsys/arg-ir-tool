@@ -19,8 +19,7 @@ package es.uam.irg.ir.gui;
 
 import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMProposal;
-import java.util.Arrays;
-import java.util.HashMap;
+import es.uam.irg.utils.StringUtils;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
@@ -34,7 +33,7 @@ public class AnnotationForm extends javax.swing.JDialog {
     private String sentText;
     private String sentClaim;
     private String sentPremise;
-    private Map<String, List<String>> categories;
+    private final Map<String, List<String>> taxonomy;
 
     /**
      * Creates new form ArgumentForm
@@ -44,16 +43,10 @@ public class AnnotationForm extends javax.swing.JDialog {
     public AnnotationForm(DataModel model) {
         initComponents();
         this.model = model;
+        this.taxonomy = model.getArgumentTaxonomy();
         this.sentText = "";
         this.sentClaim = "";
         this.sentPremise = "";
-
-        categories = new HashMap<>();
-        categories.put("Cause", Arrays.asList(new String[]{"Condition", "Reason"}));
-        categories.put("Clarification", Arrays.asList(new String[]{"Conclusion", "Exemplification", "Restatement", "Summary"}));
-        categories.put("Consequence", Arrays.asList(new String[]{"Explanation", "Goal", "Result"}));
-        categories.put("Contrast", Arrays.asList(new String[]{"Alternative", "Comparison", "Concession", "Opposition"}));
-        categories.put("Elaboration", Arrays.asList(new String[]{"Addition", "Precision", "Similarity"}));
     }
 
     /**
@@ -84,6 +77,25 @@ public class AnnotationForm extends javax.swing.JDialog {
             this.txtMessage.setText(sentText);
             this.setVisible(true);
         }
+    }
+
+    /**
+     *
+     */
+    private void highlightArgument() {
+        String sentence = this.sentText;
+
+        if (!this.sentClaim.isEmpty()) {
+            String hlClaim = model.getFormatter().highlightClaim(this.sentClaim);
+            sentence = sentence.replace(this.sentClaim, hlClaim);
+        }
+
+        if (!this.sentPremise.isEmpty()) {
+            String hlPremise = model.getFormatter().highlightPremise(this.sentPremise);
+            sentence = sentence.replace(this.sentPremise, hlPremise);
+        }
+
+        this.txtMessage.setText(sentence);
     }
 
     /**
@@ -278,23 +290,19 @@ public class AnnotationForm extends javax.swing.JDialog {
         this.sentClaim = "";
         this.sentPremise = "";
         this.txtMessage.setText(sentText);
-        this.btnClaim.setEnabled(true);
-        this.btnPremise.setEnabled(true);
         this.cmbCategory.setSelectedIndex(0);
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnClaimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClaimActionPerformed
         // TODO add your handling code here:
         this.sentClaim = this.txtMessage.getSelectedText();
-        this.btnClaim.setEnabled(false);
-        System.out.println(this.sentClaim);
+        highlightArgument();
     }//GEN-LAST:event_btnClaimActionPerformed
 
     private void btnPremiseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPremiseActionPerformed
         // TODO add your handling code here:
         this.sentPremise = this.txtMessage.getSelectedText();
-        this.btnPremise.setEnabled(false);
-        System.out.println(this.sentPremise);
+        highlightArgument();
     }//GEN-LAST:event_btnPremiseActionPerformed
 
     private void cmbCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbCategoryActionPerformed
@@ -302,8 +310,8 @@ public class AnnotationForm extends javax.swing.JDialog {
         this.cmbSubCategory.removeAllItems();
         String currCategory = this.cmbCategory.getSelectedItem().toString();
 
-        if (categories.containsKey(currCategory)) {
-            List<String> items = categories.get(currCategory);
+        if (taxonomy.containsKey(currCategory)) {
+            List<String> items = taxonomy.get(currCategory);
             items.forEach(item -> {
                 this.cmbSubCategory.addItem(item);
             });
@@ -315,15 +323,29 @@ public class AnnotationForm extends javax.swing.JDialog {
         if (validation()) {
             String category = this.cmbCategory.getSelectedItem().toString();
             String subCategory = this.cmbSubCategory.getSelectedItem().toString();
-            System.out.println("Claim: " + this.sentClaim);
-            System.out.println("Premise: " + this.sentPremise);
-            System.out.println("Category: " + category);
-            System.out.println("Sub Category: " + subCategory);
-        }
-        else {
+            System.out.println(">> Save new argument");
+            System.out.println(" - Sentence: " + this.sentText);
+            System.out.println(" - Claim: " + this.sentClaim);
+            System.out.println(" - Premise: " + this.sentPremise);
+            System.out.println(" - Category: " + category);
+            System.out.println(" - Sub Category: " + subCategory);
+            this.setVisible(false);
+        } else {
             JOptionPane.showMessageDialog(this, "Error! You must enter all the elements of the argument.", "Error dialog", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnSaveActionPerformed
+
+    /**
+     * Form validation method.
+     *
+     * @return
+     */
+    private boolean validation() {
+        if (StringUtils.isEmpty(this.sentClaim) || StringUtils.isEmpty(this.sentPremise) || this.cmbCategory.getSelectedIndex() == 0) {
+            return false;
+        }
+        return true;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClaim;
@@ -342,12 +364,5 @@ public class AnnotationForm extends javax.swing.JDialog {
     private javax.swing.JTextField txtDate;
     private javax.swing.JTextPane txtMessage;
     // End of variables declaration//GEN-END:variables
-
-    private boolean validation() {
-        if (this.sentClaim.isEmpty() || this.sentPremise.isEmpty() || this.cmbCategory.getSelectedIndex() == 0) {
-            return false;
-        }
-        return true;
-    }
 
 }

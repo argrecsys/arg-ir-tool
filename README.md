@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
-![version](https://img.shields.io/badge/version-0.9.0-blue)
-![last-update](https://img.shields.io/badge/last_update-2/17/2022-orange)
+![version](https://img.shields.io/badge/version-0.9.2-blue)
+![last-update](https://img.shields.io/badge/last_update-2/18/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 Argument-enhanced information retrieval project repository. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
@@ -10,7 +10,14 @@ We present a tool that not only allows to retrieve argumentative information, bu
 This project takes advantage of the arguments previously extracted (from the citizen proposals of the Decide Madrid platform) in the <a  href="https://github.com/argrecsys/arg-miner" target="_blank">argrecsys/arg-miner</a> repository.
 
 ## Screenshots
-![arg-ir-gui](https://raw.githubusercontent.com/argrecsys/arg-enhanced-ir/main/images/gui.gif)
+Argument-enhanced Information Retrieval Tool:
+
+![arg-ir-gui-main](https://raw.githubusercontent.com/argrecsys/arg-enhanced-ir/main/images/gui-main.gif)
+
+Arguments Configuration Form:
+
+![arg-ir-gui-annotation](https://raw.githubusercontent.com/argrecsys/arg-enhanced-ir/main/images/gui-annotation.gif)
+
 
 ## Dependencies
 The implemented solutions depend on or make use of the following libraries and .jar files:

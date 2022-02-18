@@ -33,6 +33,7 @@ import es.uam.irg.utils.StringUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,21 @@ public class DataModel {
         createIndex();
         loadLabels();
     }
+    
+    /**
+     * Returns argument relation taxonomy.
+     *
+     * @return
+     */
+    public Map<String, List<String>> getArgumentTaxonomy() {
+        Map<String, List<String>> taxonomy = new HashMap<>();
+        taxonomy.put("Cause", Arrays.asList(new String[]{"Condition", "Reason"}));
+        taxonomy.put("Clarification", Arrays.asList(new String[]{"Conclusion", "Exemplification", "Restatement", "Summary"}));
+        taxonomy.put("Consequence", Arrays.asList(new String[]{"Explanation", "Goal", "Result"}));
+        taxonomy.put("Contrast", Arrays.asList(new String[]{"Alternative", "Comparison", "Concession", "Opposition"}));
+        taxonomy.put("Elaboration", Arrays.asList(new String[]{"Addition", "Precision", "Similarity"}));
+        return taxonomy;
+    }
 
     /**
      *
@@ -94,6 +110,14 @@ public class DataModel {
         return this.proposalComments.get(id);
     }
 
+    /**
+     * 
+     * @return 
+     */
+    public ReportFormatter getFormatter() {
+        return this.formatter;
+    }
+    
     /**
      *
      * @param id

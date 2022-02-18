@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 /**
  * Argument IR data model class.
  */
-public class ArgumentIRModel {
+public class DataModel {
 
     // Class constants
     private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "label", "timestamp"};
@@ -72,7 +72,7 @@ public class ArgumentIRModel {
      * @param decimalFormat
      * @param dateFormat
      */
-    public ArgumentIRModel(String decimalFormat, String dateFormat) {
+    public DataModel(String decimalFormat, String dateFormat) {
         this.dateFormat = dateFormat;
         this.formatter = new ReportFormatter(decimalFormat, dateFormat);
         this.mdbSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MONGO_DB);

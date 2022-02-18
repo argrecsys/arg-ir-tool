@@ -22,46 +22,47 @@ import es.uam.irg.decidemadrid.entities.DMProposal;
 
 /**
  *
- * @author Usuario
  */
 public class AnnotationForm extends javax.swing.JDialog {
 
+    private final DataModel model;
+
     /**
      * Creates new form ArgumentForm
+     *
+     * @param model
      */
-    public AnnotationForm() {
+    public AnnotationForm(DataModel model) {
         initComponents();
-        this.setModal(true);
+        this.model = model;
     }
 
     /**
-     * 
-     * @param proposal 
+     *
+     * @param proposalId
      */
-    public void showRecord(DMProposal proposal) {
+    public void showProposal(int proposalId) {
+        DMProposal proposal = model.getProposal(proposalId);
         if (proposal != null) {
-            System.out.println("proposal1");
-            this.txtType.setText("Proposal");
+            this.cmbType.setSelectedItem("Proposal");
             this.txtDate.setText(proposal.getDate());
             this.txtMessage.setText(proposal.getSummary());
+            this.setVisible(true);
         }
-        System.out.println("proposal2");
-        this.setVisible(true);
     }
 
     /**
-     * 
-     * @param comment 
+     *
+     * @param commentId
      */
-    public void showRecord(DMComment comment) {
+    public void showComment(int commentId) {
+        DMComment comment = model.getComment(commentId);
         if (comment != null) {
-            System.out.println("comment1");
-            this.txtType.setText("Comment");
+            this.cmbType.setSelectedItem("Comment");
             this.txtDate.setText(comment.getDate());
             this.txtMessage.setText(comment.getText());
+            this.setVisible(true);
         }
-        System.out.println("comment2");
-        this.setVisible(true);
     }
 
     /**
@@ -74,7 +75,6 @@ public class AnnotationForm extends javax.swing.JDialog {
     private void initComponents() {
 
         lblType = new javax.swing.JLabel();
-        txtType = new javax.swing.JTextField();
         lblDate = new javax.swing.JLabel();
         txtDate = new javax.swing.JTextField();
         lblMessage = new javax.swing.JLabel();
@@ -82,6 +82,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         txtMessage = new javax.swing.JEditorPane();
         btnSave = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
+        cmbType = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -91,8 +92,6 @@ public class AnnotationForm extends javax.swing.JDialog {
         });
 
         lblType.setText("Type:");
-
-        txtType.setEditable(false);
 
         lblDate.setText("Date:");
 
@@ -111,6 +110,9 @@ public class AnnotationForm extends javax.swing.JDialog {
                 btnCloseActionPerformed(evt);
             }
         });
+
+        cmbType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "None", "Proposal", "Comment" }));
+        cmbType.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -132,16 +134,14 @@ public class AnnotationForm extends javax.swing.JDialog {
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 695, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addComponent(lblDate)
-                                        .addGap(18, 18, 18))
+                                    .addComponent(lblDate, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(lblType)
                                         .addGap(17, 17, 17)))
                                 .addGap(20, 20, 20)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtType, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(txtDate)
+                                    .addComponent(cmbType, 0, 150, Short.MAX_VALUE))))))
                 .addContainerGap(24, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -150,7 +150,7 @@ public class AnnotationForm extends javax.swing.JDialog {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblType)
-                    .addComponent(txtType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblDate)
@@ -183,12 +183,13 @@ public class AnnotationForm extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
     private javax.swing.JButton btnSave;
+    private javax.swing.JComboBox<String> cmbType;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblDate;
     private javax.swing.JLabel lblMessage;
     private javax.swing.JLabel lblType;
     private javax.swing.JTextField txtDate;
     private javax.swing.JEditorPane txtMessage;
-    private javax.swing.JTextField txtType;
     // End of variables declaration//GEN-END:variables
+
 }

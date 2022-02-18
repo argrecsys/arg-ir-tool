@@ -46,15 +46,15 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private final AnnotationForm form;
-    private final ArgumentIRModel model;
+    private final DataModel model;
 
     /**
      * Creates new form ArgumentIRForm
      */
     public ArgumentIRForm() {
         initComponents();
-        this.form = new AnnotationForm();
-        this.model = new ArgumentIRModel(DECIMAL_FORMAT, DATE_FORMAT);
+        this.model = new DataModel(DECIMAL_FORMAT, DATE_FORMAT);
+        this.form = new AnnotationForm(model);
         this.setVisible(true);
     }
 
@@ -390,10 +390,10 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                         System.out.println(" - Action: " + action + ", mode: " + mode + ", id: " + id);
 
                         if (mode.equals("PROPOSAL")) {
-                            form.showRecord(model.getProposal(id));
+                            form.showProposal(id);
 
                         } else if (mode.equals("COMMENT")) {
-                            form.showRecord(model.getComment(id));
+                            form.showComment(id);
                         }
                     }
 

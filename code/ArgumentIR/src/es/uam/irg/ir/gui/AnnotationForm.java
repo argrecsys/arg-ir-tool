@@ -19,49 +19,83 @@ package es.uam.irg.ir.gui;
 
 import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMProposal;
+import es.uam.irg.utils.StringUtils;
+import java.util.List;
+import java.util.Map;
+import javax.swing.JOptionPane;
 
 /**
  *
- * @author Usuario
  */
 public class AnnotationForm extends javax.swing.JDialog {
 
+    private final DataModel model;
+    private String sentText;
+    private String sentClaim;
+    private String sentPremise;
+    private final Map<String, List<String>> taxonomy;
+
     /**
      * Creates new form ArgumentForm
+     *
+     * @param model
      */
-    public AnnotationForm() {
+    public AnnotationForm(DataModel model) {
         initComponents();
-        this.setModal(true);
+        this.model = model;
+        this.taxonomy = model.getArgumentTaxonomy();
+        this.sentText = "";
+        this.sentClaim = "";
+        this.sentPremise = "";
     }
 
     /**
-     * 
-     * @param proposal 
+     *
+     * @param proposalId
      */
-    public void showRecord(DMProposal proposal) {
+    public void showProposal(int proposalId) {
+        DMProposal proposal = model.getProposal(proposalId);
         if (proposal != null) {
-            System.out.println("proposal1");
-            this.txtType.setText("Proposal");
+            this.sentText = proposal.getSummary();
+            this.cmbType.setSelectedItem("Proposal");
             this.txtDate.setText(proposal.getDate());
-            this.txtMessage.setText(proposal.getSummary());
+            this.txtMessage.setText(sentText);
+            this.setVisible(true);
         }
-        System.out.println("proposal2");
-        this.setVisible(true);
     }
 
     /**
-     * 
-     * @param comment 
+     *
+     * @param commentId
      */
-    public void showRecord(DMComment comment) {
+    public void showComment(int commentId) {
+        DMComment comment = model.getComment(commentId);
         if (comment != null) {
-            System.out.println("comment1");
-            this.txtType.setText("Comment");
+            this.sentText = comment.getText();
+            this.cmbType.setSelectedItem("Comment");
             this.txtDate.setText(comment.getDate());
-            this.txtMessage.setText(comment.getText());
+            this.txtMessage.setText(sentText);
+            this.setVisible(true);
         }
-        System.out.println("comment2");
-        this.setVisible(true);
+    }
+
+    /**
+     *
+     */
+    private void highlightArgument() {
+        String sentence = this.sentText;
+
+        if (!this.sentClaim.isEmpty()) {
+            String hlClaim = model.getFormatter().highlightClaim(this.sentClaim);
+            sentence = sentence.replace(this.sentClaim, hlClaim);
+        }
+
+        if (!this.sentPremise.isEmpty()) {
+            String hlPremise = model.getFormatter().highlightPremise(this.sentPremise);
+            sentence = sentence.replace(this.sentPremise, hlPremise);
+        }
+
+        this.txtMessage.setText(sentence);
     }
 
     /**
@@ -74,16 +108,23 @@ public class AnnotationForm extends javax.swing.JDialog {
     private void initComponents() {
 
         lblType = new javax.swing.JLabel();
-        txtType = new javax.swing.JTextField();
         lblDate = new javax.swing.JLabel();
         txtDate = new javax.swing.JTextField();
         lblMessage = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        txtMessage = new javax.swing.JEditorPane();
         btnSave = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
+        cmbType = new javax.swing.JComboBox<>();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        txtMessage = new javax.swing.JTextPane();
+        btnClear = new javax.swing.JButton();
+        btnClaim = new javax.swing.JButton();
+        btnPremise = new javax.swing.JButton();
+        lblRelation = new javax.swing.JLabel();
+        cmbCategory = new javax.swing.JComboBox<>();
+        cmbSubCategory = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setTitle("Arguments Configuration Form");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -92,18 +133,18 @@ public class AnnotationForm extends javax.swing.JDialog {
 
         lblType.setText("Type:");
 
-        txtType.setEditable(false);
-
         lblDate.setText("Date:");
 
         txtDate.setEditable(false);
 
         lblMessage.setText("Message:");
 
-        txtMessage.setEditable(false);
-        jScrollPane1.setViewportView(txtMessage);
-
         btnSave.setText("Save");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
 
         btnClose.setText("Close");
         btnClose.addActionListener(new java.awt.event.ActionListener() {
@@ -112,37 +153,93 @@ public class AnnotationForm extends javax.swing.JDialog {
             }
         });
 
+        cmbType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "None", "Proposal", "Comment" }));
+        cmbType.setEnabled(false);
+
+        txtMessage.setEditable(false);
+        txtMessage.setContentType("text/html"); // NOI18N
+        jScrollPane2.setViewportView(txtMessage);
+
+        btnClear.setText("Clear");
+        btnClear.setMaximumSize(new java.awt.Dimension(70, 23));
+        btnClear.setMinimumSize(new java.awt.Dimension(70, 23));
+        btnClear.setPreferredSize(new java.awt.Dimension(70, 23));
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
+
+        btnClaim.setText("Claim");
+        btnClaim.setMaximumSize(new java.awt.Dimension(70, 23));
+        btnClaim.setMinimumSize(new java.awt.Dimension(70, 23));
+        btnClaim.setPreferredSize(new java.awt.Dimension(70, 23));
+        btnClaim.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClaimActionPerformed(evt);
+            }
+        });
+
+        btnPremise.setText("Premise");
+        btnPremise.setMaximumSize(new java.awt.Dimension(70, 23));
+        btnPremise.setMinimumSize(new java.awt.Dimension(70, 23));
+        btnPremise.setPreferredSize(new java.awt.Dimension(70, 23));
+        btnPremise.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPremiseActionPerformed(evt);
+            }
+        });
+
+        lblRelation.setText("Relation:");
+
+        cmbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)", "Cause", "Clarification", "Consequence", "Contrast", "Elaboration" }));
+        cmbCategory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbCategoryActionPerformed(evt);
+            }
+        });
+
+        cmbSubCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)" }));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGap(21, 21, 21)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnSave)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnClose))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
+                        .addComponent(lblMessage)
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblMessage)
-                                .addGap(18, 18, 18)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 695, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addComponent(lblDate)
-                                        .addGap(18, 18, 18))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(lblType)
-                                        .addGap(17, 17, 17)))
-                                .addGap(20, 20, 20)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtType, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                .addContainerGap(24, Short.MAX_VALUE))
+                                .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnClaim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnPremise, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(40, 40, 40)
+                                .addComponent(lblRelation)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(btnSave)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(btnClose))
+                        .addGroup(layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(lblType)
+                                .addComponent(lblDate))
+                            .addGap(37, 37, 37)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(cmbType, 0, 150, Short.MAX_VALUE)
+                                .addComponent(txtDate))
+                            .addGap(449, 449, 449))))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -150,20 +247,28 @@ public class AnnotationForm extends javax.swing.JDialog {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblType)
-                    .addComponent(txtType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblDate)
                     .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(39, 39, 39)
+                .addGap(19, 19, 19)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnClaim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnPremise, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblRelation)
+                    .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblMessage)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
                     .addComponent(btnClose))
-                .addContainerGap())
+                .addGap(20, 20, 20))
         );
 
         pack();
@@ -180,15 +285,84 @@ public class AnnotationForm extends javax.swing.JDialog {
         this.setVisible(false);
     }//GEN-LAST:event_formWindowClosing
 
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        // TODO add your handling code here:
+        this.sentClaim = "";
+        this.sentPremise = "";
+        this.txtMessage.setText(sentText);
+        this.cmbCategory.setSelectedIndex(0);
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnClaimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClaimActionPerformed
+        // TODO add your handling code here:
+        this.sentClaim = this.txtMessage.getSelectedText();
+        highlightArgument();
+    }//GEN-LAST:event_btnClaimActionPerformed
+
+    private void btnPremiseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPremiseActionPerformed
+        // TODO add your handling code here:
+        this.sentPremise = this.txtMessage.getSelectedText();
+        highlightArgument();
+    }//GEN-LAST:event_btnPremiseActionPerformed
+
+    private void cmbCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbCategoryActionPerformed
+        // TODO add your handling code here:
+        this.cmbSubCategory.removeAllItems();
+        String currCategory = this.cmbCategory.getSelectedItem().toString();
+
+        if (taxonomy.containsKey(currCategory)) {
+            List<String> items = taxonomy.get(currCategory);
+            items.forEach(item -> {
+                this.cmbSubCategory.addItem(item);
+            });
+        }
+    }//GEN-LAST:event_cmbCategoryActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        // TODO add your handling code here:
+        if (validation()) {
+            String category = this.cmbCategory.getSelectedItem().toString();
+            String subCategory = this.cmbSubCategory.getSelectedItem().toString();
+            System.out.println(">> Save new argument");
+            System.out.println(" - Sentence: " + this.sentText);
+            System.out.println(" - Claim: " + this.sentClaim);
+            System.out.println(" - Premise: " + this.sentPremise);
+            System.out.println(" - Category: " + category);
+            System.out.println(" - Sub Category: " + subCategory);
+            this.setVisible(false);
+        } else {
+            JOptionPane.showMessageDialog(this, "Error! You must enter all the elements of the argument.", "Error dialog", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    /**
+     * Form validation method.
+     *
+     * @return
+     */
+    private boolean validation() {
+        if (StringUtils.isEmpty(this.sentClaim) || StringUtils.isEmpty(this.sentPremise) || this.cmbCategory.getSelectedIndex() == 0) {
+            return false;
+        }
+        return true;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnClaim;
+    private javax.swing.JButton btnClear;
     private javax.swing.JButton btnClose;
+    private javax.swing.JButton btnPremise;
     private javax.swing.JButton btnSave;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JComboBox<String> cmbCategory;
+    private javax.swing.JComboBox<String> cmbSubCategory;
+    private javax.swing.JComboBox<String> cmbType;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblDate;
     private javax.swing.JLabel lblMessage;
+    private javax.swing.JLabel lblRelation;
     private javax.swing.JLabel lblType;
     private javax.swing.JTextField txtDate;
-    private javax.swing.JEditorPane txtMessage;
-    private javax.swing.JTextField txtType;
+    private javax.swing.JTextPane txtMessage;
     // End of variables declaration//GEN-END:variables
+
 }

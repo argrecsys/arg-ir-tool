@@ -40,10 +40,10 @@ public class ReportFormatter {
 
     // Class constants
     public static final String APP_URL = "https://www.web.es/";
-    public static final String MODE_ANNOTATE = "ANNOTATE";
-    public static final String MODE_VALIDATE = "VALIDATE";
     public static final Color HIGHLIGHT_COLOR_CURRENT = new Color(0, 100, 0);
     public static final Color HIGHLIGHT_COLOR_DEFAULT = Color.BLUE;
+    public static final String MODE_ANNOTATE = "ANNOTATE";
+    public static final String MODE_VALIDATE = "VALIDATE";
     private static final String REPORTS_PATH = "Resources/views/";
 
     private final DecimalFormat df;
@@ -174,6 +174,33 @@ public class ReportFormatter {
         result = result.replace("$CONTENT$", body);
         return result;
     }
+    
+    /**
+     *
+     * @param claim
+     * @return
+     */
+    public String highlightClaim(String claim) {
+        return "<span style='padding:3px; background-color: #C7DEFA;'>" + claim + "</span>";
+    }
+    
+    /**
+     *
+     * @param linker
+     * @return
+     */
+    public String highlightLinker(String linker) {
+        return "<span style='padding:3px; background-color: #ABD2AC; font-style: italic;'>(" + linker + ")</span>";
+    }
+    
+    /**
+     *
+     * @param premise
+     * @return
+     */
+    public String highlightPremise(String premise) {
+        return "<span style='padding:3px; background-color: #DED7FB;'>" + premise + "</span>";
+    }
 
     /**
      *
@@ -275,9 +302,9 @@ public class ReportFormatter {
         if (arg != null) {
             String claim = getSentenceText(arg.claim);
             String premise = getSentenceText(arg.premise);
-            String hlClaim = "<span style='padding:3px; background-color: #C7DEFA;'>" + claim + "</span>";
-            String hlPremise = "<span style='padding:3px; background-color: #DED7FB;'>" + premise + "</span>";
-            String hlConnector = "<span style='padding:3px; background-color: #ABD2AC; font-style: italic;'>(" + arg.linker.getText() + ")</span>";
+            String hlClaim = highlightClaim(claim);
+            String hlPremise = highlightPremise(premise);
+            String hlConnector = highlightLinker(arg.linker.getText());
             String hlValidation = getValidationPanel(arg.getId(), label);
 
             newText = newText.replace(arg.claim.getText(), hlClaim);

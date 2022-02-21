@@ -29,6 +29,8 @@ import javax.swing.JOptionPane;
  */
 public class AnnotationForm extends javax.swing.JDialog {
 
+    private int id;
+    private String type;
     private final DataModel model;
     private String sentText;
     private String sentClaim;
@@ -55,9 +57,12 @@ public class AnnotationForm extends javax.swing.JDialog {
      */
     public void showProposal(int proposalId) {
         DMProposal proposal = model.getProposal(proposalId);
+
         if (proposal != null) {
+            this.id = proposalId;
+            this.type = "Proposal";
             this.sentText = proposal.getSummary();
-            this.cmbType.setSelectedItem("Proposal");
+            this.cmbType.setSelectedItem(this.type);
             this.txtDate.setText(proposal.getDate());
             this.txtMessage.setText(sentText);
             this.setVisible(true);
@@ -70,9 +75,12 @@ public class AnnotationForm extends javax.swing.JDialog {
      */
     public void showComment(int commentId) {
         DMComment comment = model.getComment(commentId);
+
         if (comment != null) {
+            this.id = commentId;
+            this.type = "Comment";
             this.sentText = comment.getText();
-            this.cmbType.setSelectedItem("Comment");
+            this.cmbType.setSelectedItem(this.type);
             this.txtDate.setText(comment.getDate());
             this.txtMessage.setText(sentText);
             this.setVisible(true);
@@ -110,7 +118,6 @@ public class AnnotationForm extends javax.swing.JDialog {
         lblType = new javax.swing.JLabel();
         lblDate = new javax.swing.JLabel();
         txtDate = new javax.swing.JTextField();
-        lblMessage = new javax.swing.JLabel();
         btnSave = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
         cmbType = new javax.swing.JComboBox<>();
@@ -118,10 +125,12 @@ public class AnnotationForm extends javax.swing.JDialog {
         txtMessage = new javax.swing.JTextPane();
         btnClear = new javax.swing.JButton();
         btnClaim = new javax.swing.JButton();
-        btnPremise = new javax.swing.JButton();
         lblRelation = new javax.swing.JLabel();
         cmbCategory = new javax.swing.JComboBox<>();
         cmbSubCategory = new javax.swing.JComboBox<>();
+        btnPremise = new javax.swing.JButton();
+        lblLabel = new javax.swing.JLabel();
+        cmbLabel = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Arguments Configuration Form");
@@ -136,8 +145,6 @@ public class AnnotationForm extends javax.swing.JDialog {
         lblDate.setText("Date:");
 
         txtDate.setEditable(false);
-
-        lblMessage.setText("Message:");
 
         btnSave.setText("Save");
         btnSave.addActionListener(new java.awt.event.ActionListener() {
@@ -161,9 +168,10 @@ public class AnnotationForm extends javax.swing.JDialog {
         jScrollPane2.setViewportView(txtMessage);
 
         btnClear.setText("Clear");
-        btnClear.setMaximumSize(new java.awt.Dimension(70, 23));
-        btnClear.setMinimumSize(new java.awt.Dimension(70, 23));
-        btnClear.setPreferredSize(new java.awt.Dimension(70, 23));
+        btnClear.setToolTipText("Clear the configured declarations.");
+        btnClear.setMaximumSize(new java.awt.Dimension(60, 23));
+        btnClear.setMinimumSize(new java.awt.Dimension(60, 23));
+        btnClear.setPreferredSize(new java.awt.Dimension(60, 23));
         btnClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnClearActionPerformed(evt);
@@ -171,22 +179,13 @@ public class AnnotationForm extends javax.swing.JDialog {
         });
 
         btnClaim.setText("Claim");
+        btnClaim.setToolTipText("Mark the selected text as a claim.");
         btnClaim.setMaximumSize(new java.awt.Dimension(70, 23));
         btnClaim.setMinimumSize(new java.awt.Dimension(70, 23));
         btnClaim.setPreferredSize(new java.awt.Dimension(70, 23));
         btnClaim.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnClaimActionPerformed(evt);
-            }
-        });
-
-        btnPremise.setText("Premise");
-        btnPremise.setMaximumSize(new java.awt.Dimension(70, 23));
-        btnPremise.setMinimumSize(new java.awt.Dimension(70, 23));
-        btnPremise.setPreferredSize(new java.awt.Dimension(70, 23));
-        btnPremise.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPremiseActionPerformed(evt);
             }
         });
 
@@ -201,45 +200,61 @@ public class AnnotationForm extends javax.swing.JDialog {
 
         cmbSubCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)" }));
 
+        btnPremise.setText("Premise");
+        btnPremise.setMaximumSize(new java.awt.Dimension(72, 23));
+        btnPremise.setMinimumSize(new java.awt.Dimension(70, 23));
+        btnPremise.setPreferredSize(new java.awt.Dimension(72, 23));
+        btnPremise.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPremiseActionPerformed(evt);
+            }
+        });
+
+        lblLabel.setText("Label:");
+
+        cmbLabel.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Relevant", "Valid", "Not valid" }));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblMessage)
+                        .addComponent(lblType)
                         .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(cmbType, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(40, 40, 40)
+                        .addComponent(lblDate)
+                        .addGap(18, 18, 18)
+                        .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(btnSave)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnClose))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnClaim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnPremise, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(40, 40, 40)
+                                .addGap(30, 30, 30)
                                 .addComponent(lblRelation)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(btnSave)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btnClose))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(lblType)
-                                .addComponent(lblDate))
-                            .addGap(37, 37, 37)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(cmbType, 0, 150, Short.MAX_VALUE)
-                                .addComponent(txtDate))
-                            .addGap(449, 449, 449))))
-                .addContainerGap(20, Short.MAX_VALUE))
+                                .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(30, 30, 30)
+                                .addComponent(lblLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(cmbLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(20, 20, 20))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -247,28 +262,26 @@ public class AnnotationForm extends javax.swing.JDialog {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblType)
-                    .addComponent(cmbType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblDate)
                     .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(19, 19, 19)
+                .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnClaim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnPremise, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblRelation)
                     .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnPremise, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblMessage)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
                     .addComponent(btnClose))
-                .addGap(20, 20, 20))
+                .addContainerGap())
         );
 
         pack();
@@ -291,20 +304,23 @@ public class AnnotationForm extends javax.swing.JDialog {
         this.sentPremise = "";
         this.txtMessage.setText(sentText);
         this.cmbCategory.setSelectedIndex(0);
+        this.cmbLabel.setSelectedIndex(0);
     }//GEN-LAST:event_btnClearActionPerformed
 
+    /**
+     *
+     * @param evt
+     */
     private void btnClaimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClaimActionPerformed
         // TODO add your handling code here:
         this.sentClaim = this.txtMessage.getSelectedText();
         highlightArgument();
     }//GEN-LAST:event_btnClaimActionPerformed
 
-    private void btnPremiseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPremiseActionPerformed
-        // TODO add your handling code here:
-        this.sentPremise = this.txtMessage.getSelectedText();
-        highlightArgument();
-    }//GEN-LAST:event_btnPremiseActionPerformed
-
+    /**
+     *
+     * @param evt
+     */
     private void cmbCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbCategoryActionPerformed
         // TODO add your handling code here:
         this.cmbSubCategory.removeAllItems();
@@ -318,22 +334,53 @@ public class AnnotationForm extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_cmbCategoryActionPerformed
 
+    /**
+     *
+     * @param evt
+     */
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // TODO add your handling code here:
         if (validation()) {
             String category = this.cmbCategory.getSelectedItem().toString();
             String subCategory = this.cmbSubCategory.getSelectedItem().toString();
-            System.out.println(">> Save new argument");
-            System.out.println(" - Sentence: " + this.sentText);
-            System.out.println(" - Claim: " + this.sentClaim);
-            System.out.println(" - Premise: " + this.sentPremise);
-            System.out.println(" - Category: " + category);
-            System.out.println(" - Sub Category: " + subCategory);
+            String label = this.cmbLabel.getSelectedItem().toString();
+            saveArgument(this.id, this.type, this.sentText, this.sentClaim, this.sentPremise, category, subCategory, label);
             this.setVisible(false);
         } else {
             JOptionPane.showMessageDialog(this, "Error! You must enter all the elements of the argument.", "Error dialog", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void btnPremiseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPremiseActionPerformed
+        // TODO add your handling code here:
+        this.sentPremise = this.txtMessage.getSelectedText();
+        highlightArgument();
+    }//GEN-LAST:event_btnPremiseActionPerformed
+
+    /**
+     *
+     * @param id
+     * @param type
+     * @param text
+     * @param claim
+     * @param premise
+     * @param category
+     * @param subCategory
+     * @param label
+     */
+    private boolean saveArgument(int id, String type, String text, String claim, String premise, String category, String subCategory, String label) {
+        System.out.println(">> Save new argument");
+        System.out.println(" - Id: " + id);
+        System.out.println(" - Type: " + type);
+        System.out.println(" - Sentence: " + text);
+        System.out.println(" - Claim: " + claim);
+        System.out.println(" - Premise: " + premise);
+        System.out.println(" - Category: " + category);
+        System.out.println(" - Sub Category: " + subCategory);
+        System.out.println(" - Label: " + label);
+
+        return true;
+    }
 
     /**
      * Form validation method.
@@ -354,11 +401,12 @@ public class AnnotationForm extends javax.swing.JDialog {
     private javax.swing.JButton btnPremise;
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<String> cmbCategory;
+    private javax.swing.JComboBox<String> cmbLabel;
     private javax.swing.JComboBox<String> cmbSubCategory;
     private javax.swing.JComboBox<String> cmbType;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblDate;
-    private javax.swing.JLabel lblMessage;
+    private javax.swing.JLabel lblLabel;
     private javax.swing.JLabel lblRelation;
     private javax.swing.JLabel lblType;
     private javax.swing.JTextField txtDate;

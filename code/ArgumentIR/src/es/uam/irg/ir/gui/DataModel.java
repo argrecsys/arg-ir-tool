@@ -48,9 +48,11 @@ public class DataModel {
     // Class constants
     private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "label", "timestamp"};
     private static final String LABELS_FILEPATH = "../../results/labels.csv";
+    private static final int MAX_RECORDS_PER_PAGE = 25;
     private static final int MAX_TREE_LEVEL = 3;
 
     // Class objects
+    private final Map<String, List<Integer>> cache;
     private final String dateFormat;
     private final ReportFormatter formatter;
     private final Map<String, Object> mdbSetup;
@@ -59,6 +61,7 @@ public class DataModel {
     // Class data variables
     private Map<Integer, ControversyScore> controversyScores;
     private boolean isDirty;
+    private int nRows;
     private Map<Integer, List<Argument>> proposalArguments;
     private Map<Integer, List<DMCommentTree>> proposalCommentTrees;
     private Map<Integer, DMComment> proposalComments;
@@ -74,18 +77,20 @@ public class DataModel {
      * @param dateFormat
      */
     public DataModel(String decimalFormat, String dateFormat) {
+        this.cache = new HashMap<>();
         this.dateFormat = dateFormat;
         this.formatter = new ReportFormatter(decimalFormat, dateFormat);
         this.mdbSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MONGO_DB);
         this.msqlSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MYSQL_DB);
         this.isDirty = false;
+        this.nRows = 0;
 
         // Data loading and IR index creation
         loadData();
         createIndex();
         loadLabels();
     }
-    
+
     /**
      * Returns argument relation taxonomy.
      *
@@ -111,13 +116,21 @@ public class DataModel {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public ReportFormatter getFormatter() {
         return this.formatter;
     }
-    
+
+    /**
+     *
+     * @return
+     */
+    public int getNPages() {
+        return 1 + (this.nRows / MAX_RECORDS_PER_PAGE);
+    }
+
     /**
      *
      * @param id
@@ -132,11 +145,11 @@ public class DataModel {
      * valid report.
      *
      * @param query
-     * @param nTop
      * @param reRankBy
+     * @param nPage
      * @return
      */
-    public String getQueryResult(String query, String reRankBy, int nTop) {
+    public String getQueryResult(String query, String reRankBy, int nPage) {
         String result = "";
 
         if (query.isEmpty()) {
@@ -147,12 +160,10 @@ public class DataModel {
             long start, finish;
             int timeElapsed1 = 0, timeElapsed2 = 0;
 
-            // 1. Query and rerank data
+            // 1. Data querying, reranking and pagination
             start = System.nanoTime();
-            List<Integer> ids = this.retriever.queryData(query);
-            FunctionUtils.printWithDatestamp(">> Found " + ids.size() + " hits");
-            List<Integer> docList = rankResults(ids, reRankBy, nTop);
-            FunctionUtils.printWithDatestamp(">> Data reranked by: " + reRankBy);
+            List<Integer> docList = fetchData(query, reRankBy);
+            docList = filterDataByPage(docList, nPage);
             finish = System.nanoTime();
             timeElapsed1 = (int) ((finish - start) / 1000000);
 
@@ -161,20 +172,21 @@ public class DataModel {
             StringBuilder body = new StringBuilder();
             for (int i = 0; i < docList.size(); i++) {
                 int docId = docList.get(i);
+                int ix = (nPage - 1) * MAX_RECORDS_PER_PAGE + (i + 1);
                 DMProposal proposal = proposals.get(docId);
                 DMProposalSummary summary = proposalSummaries.get(docId);
                 List<DMCommentTree> commentTrees = proposalCommentTrees.get(docId);
                 List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
                 double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId).getValue() : 0.0);
 
-                String report = this.formatter.getProposalInfoReport((i + 1), proposal, summary, commentTrees, proposalComments, arguments, controversy, proposalLabels);
+                String report = this.formatter.getProposalInfoReport(ix, proposal, summary, commentTrees, proposalComments, arguments, controversy, proposalLabels);
                 body.append(report);
             }
             finish = System.nanoTime();
             timeElapsed2 = (int) ((finish - start) / 1000000);
 
             // Update final report
-            result = this.formatter.getProposalsReport(body.toString(), docList.size(), timeElapsed1, timeElapsed2);
+            result = this.formatter.getProposalsReport(body.toString(), nRows, timeElapsed1, timeElapsed2);
             FunctionUtils.printWithDatestamp(">> The results report has been created");
         }
 
@@ -219,6 +231,48 @@ public class DataModel {
         FunctionUtils.printWithDatestamp(">> Creating Lucene index");
         this.retriever = new InfoRetriever();
         this.retriever.createIndex(proposals, proposalSummaries);
+    }
+
+    /**
+     * Query data from the index and use a cache to optimize queries.
+     *
+     * @param query
+     * @param reRankBy
+     * @return
+     */
+    private List<Integer> fetchData(String query, String reRankBy) {
+        List<Integer> docList;
+        String key = query + reRankBy;
+
+        if (cache.containsKey(key)) {
+            docList = cache.get(key);
+            FunctionUtils.printWithDatestamp(">> Loaded " + docList.size() + " hits");
+
+        } else {
+            List<Integer> ids = this.retriever.queryData(query);
+            FunctionUtils.printWithDatestamp(">> Found " + ids.size() + " hits");
+            docList = rankResults(ids, reRankBy);
+            FunctionUtils.printWithDatestamp(">> Data reranked by: " + reRankBy);
+            cache.put(key, docList);
+        }
+
+        nRows = docList.size();
+        return docList;
+    }
+
+    /**
+     * Filters the results and returns the selected N page.
+     *
+     * @param docList
+     * @param nPage
+     * @return
+     */
+    private List<Integer> filterDataByPage(List<Integer> docList, int nPage) {
+        // Filter
+        int init = (nPage - 1) * MAX_RECORDS_PER_PAGE;
+        int end = Math.min(nPage * MAX_RECORDS_PER_PAGE, docList.size());
+        docList = docList.subList(init, end);
+        return docList;
     }
 
     /**
@@ -284,16 +338,16 @@ public class DataModel {
     }
 
     /**
-     * Ranks the results and returns the N top records according to a specified
-     * criterion.
+     * Ranks the results according to a specified criterion.
      *
      * @param docs
      * @param reRankBy
      * @return
      */
-    private List<Integer> rankResults(List<Integer> ids, String reRankBy, int nTop) {
+    private List<Integer> rankResults(List<Integer> ids, String reRankBy) {
         List<Integer> docList = new ArrayList<>();
 
+        // Rerank
         if (ids.size() > 0 && !StringUtils.isEmpty(reRankBy)) {
             if (reRankBy.equals("Nothing")) {
                 docList.addAll(ids);
@@ -318,7 +372,7 @@ public class DataModel {
             }
         }
 
-        return docList.stream().limit(nTop).toList();
+        return docList;
     }
 
 }

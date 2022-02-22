@@ -45,6 +45,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public static final String DECIMAL_FORMAT = "0.000";
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+    private boolean doEvents;
     private final AnnotationForm form;
     private final DataModel model;
 
@@ -53,6 +54,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     public ArgumentIRForm() {
         initComponents();
+        this.doEvents = false;
         this.model = new DataModel(DECIMAL_FORMAT, DATE_FORMAT);
         this.form = new AnnotationForm(model);
         this.setVisible(true);
@@ -97,24 +99,15 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         String header = "";
 
         String query = this.txtQuery.getText().trim();
-        int nTop = getTopRecordsOption();
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
-        header = String.format("Query: %s | Top: %d | Reranked by: %s", query, nTop, reRankBy);
+        int nPage = Integer.parseInt(this.cmbPage.getSelectedItem().toString());
+
+        header = String.format("Query: %s | Reranked by: %s | Page number: %d", query, reRankBy, nPage);
         if (type.equals("html")) {
             header = String.format("<div>" + header + "</div>");
         }
 
         return header;
-    }
-
-    /**
-     *
-     * @return
-     */
-    private int getTopRecordsOption() {
-        String nTopOption = this.cmbTop.getSelectedItem().toString();
-        int nTop = (nTopOption.equals("All") ? Integer.MAX_VALUE : Integer.parseInt(nTopOption));
-        return nTop;
     }
 
     /**
@@ -165,10 +158,11 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         btnSearch = new javax.swing.JButton();
         scrollPane = new javax.swing.JScrollPane();
         txtResult = new javax.swing.JEditorPane();
-        lblTop = new javax.swing.JLabel();
-        cmbTop = new javax.swing.JComboBox<>();
+        lblPage = new javax.swing.JLabel();
+        cmbPage = new javax.swing.JComboBox<>();
         lblRerankBy = new javax.swing.JLabel();
         cmbReranks = new javax.swing.JComboBox<>();
+        lblOfN = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
         mItemExportHtml = new javax.swing.JMenuItem();
@@ -210,13 +204,20 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         });
         scrollPane.setViewportView(txtResult);
 
-        lblTop.setText("Top:");
+        lblPage.setText("Page:");
 
-        cmbTop.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "25", "50", "100", "All" }));
+        cmbPage.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-" }));
+        cmbPage.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cmbPageItemStateChanged(evt);
+            }
+        });
 
         lblRerankBy.setText("Rerank by:");
 
         cmbReranks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nothing", "Arguments", "Controversy" }));
+
+        lblOfN.setText("of N");
 
         menuFile.setText("File");
 
@@ -269,25 +270,25 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblQuery)
-                            .addComponent(lblTop))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(cmbTop, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(30, 30, 30)
-                                .addComponent(lblRerankBy)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(743, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtQuery)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnSearch)
-                                .addGap(20, 20, 20))))
+                        .addComponent(lblRerankBy)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblPage)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmbPage, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblOfN)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(scrollPane)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblQuery)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtQuery, javax.swing.GroupLayout.DEFAULT_SIZE, 1051, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnSearch))
+                            .addComponent(scrollPane))
                         .addGap(20, 20, 20))))
         );
         layout.setVerticalGroup(
@@ -300,10 +301,11 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     .addComponent(btnSearch))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTop)
-                    .addComponent(cmbTop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblPage)
+                    .addComponent(cmbPage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblRerankBy)
-                    .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblOfN))
                 .addGap(20, 20, 20)
                 .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
                 .addGap(20, 20, 20))
@@ -322,9 +324,10 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         // TODO add your handling code here:
         String query = this.txtQuery.getText().trim();
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
-        int nTop = getTopRecordsOption();
+
         // Query data
-        String result = this.model.getQueryResult(query, reRankBy, nTop);
+        String result = this.model.getQueryResult(query, reRankBy, 1);
+        updatePagesComboBox();
 
         // Display report
         this.txtResult.setText(result);
@@ -417,7 +420,9 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      */
     private void mItemSaveLabelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemSaveLabelsActionPerformed
         // TODO add your handling code here:
-        model.saveLabelsToFile();
+        if (model.isDirty()) {
+            model.saveLabelsToFile();
+        }
     }//GEN-LAST:event_mItemSaveLabelsActionPerformed
 
     /**
@@ -428,6 +433,22 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         // TODO add your handling code here:
         closeForm();
     }//GEN-LAST:event_formWindowClosing
+
+    private void cmbPageItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmbPageItemStateChanged
+        // TODO add your handling code here:
+        if (this.doEvents) {
+            String query = this.txtQuery.getText().trim();
+            String reRankBy = this.cmbReranks.getSelectedItem().toString();
+            int nPage = Integer.parseInt(this.cmbPage.getSelectedItem().toString());
+
+            // Query data
+            String result = this.model.getQueryResult(query, reRankBy, nPage);
+
+            // Display report
+            this.txtResult.setText(result);
+            this.txtResult.setCaretPosition(0);
+        }
+    }//GEN-LAST:event_cmbPageItemStateChanged
 
     /**
      *
@@ -443,14 +464,29 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         return "";
     }
 
+    /**
+     *
+     */
+    private void updatePagesComboBox() {
+        this.doEvents = false;
+        int nPages = this.model.getNPages();
+        this.lblOfN.setText("of " + nPages);
+        this.cmbPage.removeAllItems();
+        for (int i = 1; i <= nPages; i++) {
+            this.cmbPage.addItem("" + i);
+        }
+        this.doEvents = true;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSearch;
+    private javax.swing.JComboBox<String> cmbPage;
     private javax.swing.JComboBox<String> cmbReranks;
-    private javax.swing.JComboBox<String> cmbTop;
     private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JLabel lblOfN;
+    private javax.swing.JLabel lblPage;
     private javax.swing.JLabel lblQuery;
     private javax.swing.JLabel lblRerankBy;
-    private javax.swing.JLabel lblTop;
     private javax.swing.JMenuItem mItemClose;
     private javax.swing.JMenuItem mItemExportHtml;
     private javax.swing.JMenuItem mItemExportText;

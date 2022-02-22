@@ -171,6 +171,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         mItemClose = new javax.swing.JMenuItem();
         menuLabel = new javax.swing.JMenu();
         mItemSaveLabels = new javax.swing.JMenuItem();
+        menuHelp = new javax.swing.JMenu();
+        mItemAbout = new javax.swing.JMenuItem();
 
         fileChooser.setDialogTitle("Export report");
 
@@ -259,6 +261,18 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         menuLabel.add(mItemSaveLabels);
 
         menuBar.add(menuLabel);
+
+        menuHelp.setText("Help");
+
+        mItemAbout.setText("About");
+        mItemAbout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mItemAboutActionPerformed(evt);
+            }
+        });
+        menuHelp.add(mItemAbout);
+
+        menuBar.add(menuHelp);
 
         setJMenuBar(menuBar);
 
@@ -451,6 +465,25 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     }//GEN-LAST:event_cmbPageItemStateChanged
 
     /**
+     * 
+     * @param evt 
+     */
+    private void mItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemAboutActionPerformed
+        // TODO add your handling code here:
+        String aboutMsg = """
+                          Argument-enhanced Information Retrieval Tool
+                          
+                          Version: 0.9.6
+                          Date: 02/22/2022
+                          Created by: Andr\u00e9s Segura-Tinoco & Iv\u00e1n Cantador
+                          License: Apache License 2.0
+                          Web site: https://argrecsys.github.io/arg-enhanced-ir 
+                          """;
+
+        JOptionPane.showMessageDialog(this, aboutMsg, "About", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_mItemAboutActionPerformed
+
+    /**
      *
      * @return
      */
@@ -487,12 +520,14 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private javax.swing.JLabel lblPage;
     private javax.swing.JLabel lblQuery;
     private javax.swing.JLabel lblRerankBy;
+    private javax.swing.JMenuItem mItemAbout;
     private javax.swing.JMenuItem mItemClose;
     private javax.swing.JMenuItem mItemExportHtml;
     private javax.swing.JMenuItem mItemExportText;
     private javax.swing.JMenuItem mItemSaveLabels;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenu menuFile;
+    private javax.swing.JMenu menuHelp;
     private javax.swing.JMenu menuLabel;
     private javax.swing.JPopupMenu.Separator menuSeparator;
     private javax.swing.JScrollPane scrollPane;

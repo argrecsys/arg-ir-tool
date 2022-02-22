@@ -82,7 +82,7 @@ public class ReportFormatter {
             DMComment currNode = comments.get(nodeId);
             Argument arg = getCommentArgument(currNode, arguments);
             String argLabel = getArgumentLabel(arg, labels);
-            String btAnnotate = "<a href='" + APP_URL + MODE_ANNOTATE + "/COMMENT/" + nodeId + "'><img src='file:" + imgPath + "' border=0></img></a>";
+            String btAnnotate = getAnnotationButton("COMMENT", nodeId);
 
             report = report.replace("PADDING-LEFTpx", (leftPadding + "px"));
             report = report.replace("$ID$", "" + nodeId);
@@ -127,7 +127,7 @@ public class ReportFormatter {
         StringBuilder body = new StringBuilder();
         Argument arg = getProposalArgument(proposal, arguments);
         String argLabel = getArgumentLabel(arg, labels);
-        String btAnnotate = "<a href='" + APP_URL + MODE_ANNOTATE + "/PROPOSAL/" + proposal.getId() + "'><img src='file:" + imgPath + "' border=0></img></a>";
+        String btAnnotate = getAnnotationButton("PROPOSAL", proposal.getId());
 
         // Create main report
         report = report.replace("$IX$", "" + ix);
@@ -174,7 +174,7 @@ public class ReportFormatter {
         result = result.replace("$CONTENT$", body);
         return result;
     }
-    
+
     /**
      *
      * @param claim
@@ -183,7 +183,7 @@ public class ReportFormatter {
     public String highlightClaim(String claim) {
         return "<span style='padding:3px; background-color: #C7DEFA;'>" + claim + "</span>";
     }
-    
+
     /**
      *
      * @param linker
@@ -192,7 +192,7 @@ public class ReportFormatter {
     public String highlightLinker(String linker) {
         return "<span style='padding:3px; background-color: #ABD2AC; font-style: italic;'>(" + linker + ")</span>";
     }
-    
+
     /**
      *
      * @param premise
@@ -200,6 +200,16 @@ public class ReportFormatter {
      */
     public String highlightPremise(String premise) {
         return "<span style='padding:3px; background-color: #DED7FB;'>" + premise + "</span>";
+    }
+
+    /**
+     *
+     * @param type
+     * @param id
+     * @return
+     */
+    private String getAnnotationButton(String type, int id) {
+        return "<a href='" + APP_URL + MODE_ANNOTATE + "/" + type + "/" + id + "'><img src='file:" + imgPath + "' border=0></img></a>";
     }
 
     /**

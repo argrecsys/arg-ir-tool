@@ -46,7 +46,6 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private boolean doEvents;
-    private final AnnotationForm form;
     private final DataModel model;
 
     /**
@@ -56,7 +55,6 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         initComponents();
         this.doEvents = false;
         this.model = new DataModel(DECIMAL_FORMAT, DATE_FORMAT);
-        this.form = new AnnotationForm(model);
         this.setVisible(true);
     }
 
@@ -406,11 +404,17 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                         int id = Integer.parseInt(tokens[2]);
                         System.out.println(" - Action: " + action + ", mode: " + mode + ", id: " + id);
 
+                        AnnotationForm form = new AnnotationForm(model);
                         if (mode.equals("PROPOSAL")) {
                             form.showProposal(id);
 
                         } else if (mode.equals("COMMENT")) {
                             form.showComment(id);
+                        }
+                        
+                        // Refresh current report
+                        if (form.getStatus()) {
+                            cmbPageItemStateChanged(null);
                         }
                     }
 
@@ -465,8 +469,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     }//GEN-LAST:event_cmbPageItemStateChanged
 
     /**
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void mItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemAboutActionPerformed
         // TODO add your handling code here:

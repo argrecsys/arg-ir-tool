@@ -19,6 +19,10 @@ package es.uam.irg.ir.gui;
 
 import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMProposal;
+import es.uam.irg.nlp.am.arguments.Argument;
+import es.uam.irg.nlp.am.arguments.ArgumentLinker;
+import es.uam.irg.nlp.am.arguments.ArgumentPattern;
+import es.uam.irg.nlp.am.arguments.Sentence;
 import es.uam.irg.utils.StringUtils;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +33,16 @@ import javax.swing.JOptionPane;
  */
 public class AnnotationForm extends javax.swing.JDialog {
 
-    private int id;
-    private String type;
     private final DataModel model;
     private String sentText;
     private String sentClaim;
     private String sentPremise;
     private final Map<String, List<String>> taxonomy;
+    private String argumentId;
+    private int commentId;
+    private int parentId;
+    private int userId;
+    private boolean result;
 
     /**
      * Creates new form ArgumentForm
@@ -46,23 +53,37 @@ public class AnnotationForm extends javax.swing.JDialog {
         initComponents();
         this.model = model;
         this.taxonomy = model.getArgumentTaxonomy();
+        this.commentId = 0;
+        this.userId = 0;
+        this.parentId = 0;
+        this.argumentId = "";
         this.sentText = "";
         this.sentClaim = "";
         this.sentPremise = "";
+        this.result = false;
+    }
+
+    public boolean getStatus() {
+        return this.result;
     }
 
     /**
      *
-     * @param proposalId
+     * @param id
      */
-    public void showProposal(int proposalId) {
-        DMProposal proposal = model.getProposal(proposalId);
+    public void showProposal(int id) {
+        DMProposal proposal = model.getProposal(id);
 
         if (proposal != null) {
-            this.id = proposalId;
-            this.type = "Proposal";
+            // Save global ids
+            int proposalId = proposal.getId();
+            this.commentId = -1;
+            this.userId = proposal.getUserId();
+            this.parentId = -1;
+            this.argumentId = proposalId + "-0-1-1";
+
             this.sentText = proposal.getSummary();
-            this.cmbType.setSelectedItem(this.type);
+            this.cmbType.setSelectedItem("Proposal");
             this.txtDate.setText(proposal.getDate());
             this.txtMessage.setText(sentText);
             this.setVisible(true);
@@ -71,16 +92,21 @@ public class AnnotationForm extends javax.swing.JDialog {
 
     /**
      *
-     * @param commentId
+     * @param id
      */
-    public void showComment(int commentId) {
-        DMComment comment = model.getComment(commentId);
+    public void showComment(int id) {
+        DMComment comment = model.getComment(id);
 
         if (comment != null) {
-            this.id = commentId;
-            this.type = "Comment";
+            // Save global ids
+            int proposalId = comment.getProposalId();
+            this.commentId = comment.getId();
+            this.userId = comment.getUserId();
+            this.parentId = comment.getParentId();
+            this.argumentId = proposalId + "-" + commentId + "-1-1";
+
             this.sentText = comment.getText();
-            this.cmbType.setSelectedItem(this.type);
+            this.cmbType.setSelectedItem("Comment");
             this.txtDate.setText(comment.getDate());
             this.txtMessage.setText(sentText);
             this.setVisible(true);
@@ -134,6 +160,7 @@ public class AnnotationForm extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Arguments Configuration Form");
+        setModal(true);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -344,7 +371,7 @@ public class AnnotationForm extends javax.swing.JDialog {
             String category = this.cmbCategory.getSelectedItem().toString();
             String subCategory = this.cmbSubCategory.getSelectedItem().toString();
             String label = this.cmbLabel.getSelectedItem().toString();
-            saveArgument(this.id, this.type, this.sentText, this.sentClaim, this.sentPremise, category, subCategory, label);
+            saveArgument(argumentId, userId, commentId, parentId, this.sentText, this.sentClaim, this.sentPremise, category, subCategory, label);
             this.setVisible(false);
         } else {
             JOptionPane.showMessageDialog(this, "Error! You must enter all the elements of the argument.", "Error dialog", JOptionPane.ERROR_MESSAGE);
@@ -359,27 +386,29 @@ public class AnnotationForm extends javax.swing.JDialog {
 
     /**
      *
-     * @param id
-     * @param type
+     * @param argumentId
+     * @param userId
+     * @param commentId
+     * @param parentId
      * @param text
      * @param claim
      * @param premise
      * @param category
      * @param subCategory
      * @param label
+     * @return
      */
-    private boolean saveArgument(int id, String type, String text, String claim, String premise, String category, String subCategory, String label) {
-        System.out.println(">> Save new argument");
-        System.out.println(" - Id: " + id);
-        System.out.println(" - Type: " + type);
-        System.out.println(" - Sentence: " + text);
-        System.out.println(" - Claim: " + claim);
-        System.out.println(" - Premise: " + premise);
-        System.out.println(" - Category: " + category);
-        System.out.println(" - Sub Category: " + subCategory);
-        System.out.println(" - Label: " + label);
+    private void saveArgument(String argumentId, int userId, int commentId, int parentId, String text, String claim, String premise, String category, String subCategory, String label) {
+        Sentence majorClaim = new Sentence();
+        Sentence sClaim = new Sentence(claim);
+        Sentence sPremise = new Sentence(premise);
+        ArgumentLinker linker = new ArgumentLinker(category, subCategory, "", "");
+        ArgumentPattern sentPattern = new ArgumentPattern("[manual]", 1);
+        Argument arg = new Argument(argumentId, userId, commentId, parentId, text, false, sClaim, sPremise, "", linker, sentPattern, "");
+        arg.setMajorClaim(majorClaim);
 
-        return true;
+        System.out.println(">> Save/update argument");
+        this.result = model.saveArgument(arg, label.toUpperCase());
     }
 
     /**

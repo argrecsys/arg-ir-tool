@@ -17,6 +17,8 @@
  */
 package es.uam.irg.ir.gui;
 
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 import es.uam.irg.decidemadrid.controversy.ControversyScore;
 import es.uam.irg.decidemadrid.db.DMDBManager;
 import es.uam.irg.decidemadrid.db.MongoDbManager;
@@ -203,6 +205,28 @@ public class DataModel {
 
     /**
      *
+     * @param arg
+     * @param label
+     * @return
+     */
+    public boolean saveArgument(Argument arg, String label) {
+        boolean result = false;
+
+        // Insert/update argument
+        if (arg.isValid()) {
+            MongoDbManager mngManager = new MongoDbManager(mdbSetup);
+            mngManager.upsertDocument(arg.getDocument(), Filters.eq("argumentID", arg.getId()), new UpdateOptions().upsert(true));
+            proposalArguments = mngManager.selectProposalArguments(MAX_TREE_LEVEL);
+            updateModelLabel(arg.getId(), label);
+            result = true;
+            FunctionUtils.printWithDatestamp(" - Upserted argument: " + arg.getId());
+        }
+
+        return result;
+    }
+
+    /**
+     *
      * @return
      */
     public boolean saveLabelsToFile() {
@@ -283,19 +307,8 @@ public class DataModel {
             FunctionUtils.printWithDatestamp(">> Creating connections");
 
             // Connecting to databases and fetching data
-            DMDBManager dbManager;
-            if (msqlSetup != null && msqlSetup.size() == 4) {
-                dbManager = new DMDBManager(msqlSetup);
-            } else {
-                dbManager = new DMDBManager();
-            }
-
-            MongoDbManager mngManager;
-            if (mdbSetup != null && mdbSetup.size() == 4) {
-                mngManager = new MongoDbManager(mdbSetup);
-            } else {
-                mngManager = new MongoDbManager();
-            }
+            DMDBManager dbManager = new DMDBManager(msqlSetup);
+            MongoDbManager mngManager = new MongoDbManager(mdbSetup);
 
             FunctionUtils.printWithDatestamp(">> Loading data");
 

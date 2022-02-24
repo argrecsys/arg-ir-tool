@@ -64,6 +64,42 @@ public class ReportFormatter {
     }
 
     /**
+     *
+     * @param comment
+     * @param arguments
+     * @return
+     */
+    public Argument getArgumentByComment(DMComment comment, List<Argument> arguments) {
+        if (arguments != null) {
+            for (Argument arg : arguments) {
+                String[] tokens = arg.getId().split("-");
+                if (tokens.length >= 2 && Integer.parseInt(tokens[0]) == comment.getProposalId() && Integer.parseInt(tokens[1]) == comment.getId()) {
+                    return arg;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param proposal
+     * @param arguments
+     * @return
+     */
+    public Argument getArgumentByProposal(DMProposal proposal, List<Argument> arguments) {
+        if (arguments != null) {
+            for (Argument arg : arguments) {
+                String[] tokens = arg.getId().split("-");
+                if (tokens.length >= 2 && Integer.parseInt(tokens[0]) == proposal.getId() && Integer.parseInt(tokens[1]) == 0) {
+                    return arg;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Creates comment HTML report.
      *
      * @param tree
@@ -80,7 +116,7 @@ public class ReportFormatter {
             int nodeId = tree.getId();
             int leftPadding = tree.getLevel() * 15;
             DMComment currNode = comments.get(nodeId);
-            Argument arg = getCommentArgument(currNode, arguments);
+            Argument arg = getArgumentByComment(currNode, arguments);
             String argLabel = getArgumentLabel(arg, labels);
             String btAnnotate = getAnnotationButton("COMMENT", nodeId);
 
@@ -125,7 +161,7 @@ public class ReportFormatter {
             Map<Integer, DMComment> comments, List<Argument> arguments, Double controversy, Map<String, ArgumentLabel> labels) {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
-        Argument arg = getProposalArgument(proposal, arguments);
+        Argument arg = getArgumentByProposal(proposal, arguments);
         String argLabel = getArgumentLabel(arg, labels);
         String btAnnotate = getAnnotationButton("PROPOSAL", proposal.getId());
 
@@ -225,42 +261,6 @@ public class ReportFormatter {
             value = label.getLabel();
         }
         return value;
-    }
-
-    /**
-     *
-     * @param comment
-     * @param arguments
-     * @return
-     */
-    private Argument getCommentArgument(DMComment comment, List<Argument> arguments) {
-        if (arguments != null) {
-            for (Argument arg : arguments) {
-                String[] tokens = arg.getId().split("-");
-                if (tokens.length >= 2 && Integer.parseInt(tokens[0]) == comment.getProposalId() && Integer.parseInt(tokens[1]) == comment.getId()) {
-                    return arg;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     *
-     * @param proposal
-     * @param arguments
-     * @return
-     */
-    private Argument getProposalArgument(DMProposal proposal, List<Argument> arguments) {
-        if (arguments != null) {
-            for (Argument arg : arguments) {
-                String[] tokens = arg.getId().split("-");
-                if (tokens.length >= 2 && Integer.parseInt(tokens[0]) == proposal.getId() && Integer.parseInt(tokens[1]) == 0) {
-                    return arg;
-                }
-            }
-        }
-        return null;
     }
 
     /**

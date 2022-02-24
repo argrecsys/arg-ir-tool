@@ -275,6 +275,25 @@ public class StringUtils {
      * @param s
      * @return
      */
+    public static String toTitleCase(String s) {
+        StringBuilder sb = new StringBuilder();
+        String ACTIONABLE_DELIMITERS = " '-/";
+        boolean capNext = true;
+
+        for (char c : s.toCharArray()) {
+            c = (capNext) ? Character.toUpperCase(c) : Character.toLowerCase(c);
+            sb.append(c);
+            capNext = (ACTIONABLE_DELIMITERS.indexOf((int) c) >= 0);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     *
+     * @param s
+     * @return
+     */
     public static String unaccent(String s) {
         return Normalizer
                 .normalize(s, Normalizer.Form.NFD)

@@ -33,6 +33,7 @@ import javax.swing.JOptionPane;
  */
 public class AnnotationForm extends javax.swing.JDialog {
 
+    private Argument sentArg;
     private final DataModel model;
     private String sentText;
     private String sentClaim;
@@ -57,6 +58,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         this.userId = 0;
         this.parentId = 0;
         this.argumentId = "";
+        this.sentArg = null;
         this.sentText = "";
         this.sentClaim = "";
         this.sentPremise = "";
@@ -75,6 +77,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         DMProposal proposal = model.getProposal(id);
 
         if (proposal != null) {
+
             // Save global ids
             int proposalId = proposal.getId();
             this.commentId = -1;
@@ -82,10 +85,23 @@ public class AnnotationForm extends javax.swing.JDialog {
             this.parentId = -1;
             this.argumentId = proposalId + "-0-1-1";
 
+            // Save sentences variables
+            this.sentArg = model.getFormatter().getArgumentByProposal(proposal, model.getProposalArguments(proposalId));
             this.sentText = proposal.getSummary();
+            if (this.sentArg != null) {
+                this.sentClaim = this.sentArg.claim.getText();
+                this.sentPremise = this.sentArg.premise.getText();
+            }
+
+            // Set graphic controls
             this.cmbType.setSelectedItem("Proposal");
             this.txtDate.setText(proposal.getDate());
-            this.txtMessage.setText(sentText);
+            if (this.sentArg != null) {
+                this.cmbCategory.setSelectedItem(StringUtils.toTitleCase(this.sentArg.linker.getCategory()));
+                this.cmbSubCategory.setSelectedItem(StringUtils.toTitleCase(this.sentArg.linker.getSubCategory()));
+                this.cmbIntention.setSelectedItem(StringUtils.toTitleCase(this.sentArg.linker.getIntention()));
+            }
+            highlightArgument();
             this.setVisible(true);
         }
     }
@@ -98,6 +114,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         DMComment comment = model.getComment(id);
 
         if (comment != null) {
+
             // Save global ids
             int proposalId = comment.getProposalId();
             this.commentId = comment.getId();
@@ -105,10 +122,23 @@ public class AnnotationForm extends javax.swing.JDialog {
             this.parentId = comment.getParentId();
             this.argumentId = proposalId + "-" + commentId + "-1-1";
 
+            // Save sentences variables
+            this.sentArg = model.getFormatter().getArgumentByComment(comment, model.getProposalArguments(proposalId));
             this.sentText = comment.getText();
+            if (this.sentArg != null) {
+                this.sentClaim = this.sentArg.claim.getText();
+                this.sentPremise = this.sentArg.premise.getText();
+            }
+
+            // Set graphic controls
             this.cmbType.setSelectedItem("Comment");
             this.txtDate.setText(comment.getDate());
-            this.txtMessage.setText(sentText);
+            if (this.sentArg != null) {
+                this.cmbCategory.setSelectedItem(StringUtils.toTitleCase(this.sentArg.linker.getCategory()));
+                this.cmbSubCategory.setSelectedItem(StringUtils.toTitleCase(this.sentArg.linker.getSubCategory()));
+                this.cmbIntention.setSelectedItem(StringUtils.toTitleCase(this.sentArg.linker.getIntention()));
+            }
+            highlightArgument();
             this.setVisible(true);
         }
     }
@@ -338,6 +368,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         this.sentPremise = "";
         this.txtMessage.setText(sentText);
         this.cmbCategory.setSelectedIndex(0);
+        this.cmbIntention.setSelectedIndex(0);
         this.cmbLabel.setSelectedIndex(0);
     }//GEN-LAST:event_btnClearActionPerformed
 
@@ -393,7 +424,7 @@ public class AnnotationForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnPremiseActionPerformed
 
     /**
-     * 
+     *
      * @param argumentId
      * @param userId
      * @param commentId
@@ -404,18 +435,21 @@ public class AnnotationForm extends javax.swing.JDialog {
      * @param category
      * @param subCategory
      * @param intent
-     * @param label 
+     * @param label
      */
     private void saveArgument(String argumentId, int userId, int commentId, int parentId, String text, String claim, String premise, String category, String subCategory, String intent, String label) {
-        Sentence majorClaim = new Sentence();
+        Sentence majorClaim = (sentArg != null ? sentArg.getMajorClaim() : new Sentence());
         Sentence sClaim = new Sentence(claim);
         Sentence sPremise = new Sentence(premise);
+        String mainVerb = (sentArg != null ? sentArg.getMainVerb(): "");
+        String syntacticTree = (sentArg != null ? sentArg.getSyntacticTree() : "");
         ArgumentLinker linker = new ArgumentLinker(category.toUpperCase(), subCategory.toUpperCase(), intent.toLowerCase(), "");
         ArgumentPattern sentPattern = new ArgumentPattern("[manual]", 1);
-        Argument arg = new Argument(argumentId, userId, commentId, parentId, text, false, sClaim, sPremise, "", linker, sentPattern, "");
-        arg.setMajorClaim(majorClaim);
-
+        
+        // Create and save new argument
         System.out.println(">> Save/update argument");
+        Argument arg = new Argument(argumentId, userId, commentId, parentId, text, false, sClaim, sPremise, mainVerb, linker, sentPattern, syntacticTree);
+        arg.setMajorClaim(majorClaim);
         this.result = model.saveArgument(arg, label.toUpperCase());
     }
 
@@ -425,7 +459,7 @@ public class AnnotationForm extends javax.swing.JDialog {
      * @return
      */
     private boolean validation() {
-        if (StringUtils.isEmpty(this.sentClaim) || StringUtils.isEmpty(this.sentPremise) || this.cmbCategory.getSelectedIndex() == 0|| this.cmbIntention.getSelectedIndex() == 0) {
+        if (StringUtils.isEmpty(this.sentClaim) || StringUtils.isEmpty(this.sentPremise) || this.cmbCategory.getSelectedIndex() == 0 || this.cmbIntention.getSelectedIndex() == 0) {
             return false;
         }
         return true;

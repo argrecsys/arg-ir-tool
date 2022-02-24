@@ -76,6 +76,10 @@ public class ArgumentLinker {
         return this.linker.equals(lnk.linker);
     }
 
+    public String getCategory() {
+        return this.category;
+    }
+
     /**
      *
      * @return
@@ -90,6 +94,10 @@ public class ArgumentLinker {
         return doc;
     }
 
+    public String getIntention() {
+        return this.relationType;
+    }
+
     /**
      *
      * @return
@@ -102,6 +110,10 @@ public class ArgumentLinker {
         json.put("relationType", this.relationType);
 
         return json;
+    }
+
+    public String getSubCategory() {
+        return this.subCategory;
     }
 
     /**

@@ -411,7 +411,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                         } else if (mode.equals("COMMENT")) {
                             form.showComment(id);
                         }
-                        
+
                         // Refresh current report
                         if (form.getStatus()) {
                             cmbPageItemStateChanged(null);
@@ -502,7 +502,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     }
 
     /**
-     *
+     * Updates the items of the combobox Pages.
      */
     private void updatePagesComboBox() {
         this.doEvents = false;

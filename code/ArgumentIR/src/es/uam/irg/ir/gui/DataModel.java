@@ -143,6 +143,15 @@ public class DataModel {
     }
 
     /**
+     *
+     * @param proposalId
+     * @return
+     */
+    public List<Argument> getProposalArguments(int proposalId) {
+        return this.proposalArguments.get(proposalId);
+    }
+
+    /**
      * Function that queries the data to the index (Apache Lucene) and returns a
      * valid report.
      *

@@ -178,6 +178,22 @@ public class Argument {
 
     /**
      *
+     * @return
+     */
+    public String getMainVerb() {
+        return this.mainVerb;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public Sentence getMajorClaim() {
+        return this.majorClaim;
+    }
+
+    /**
+     *
      * @param majorClaim
      */
     public void setMajorClaim(Sentence majorClaim) {

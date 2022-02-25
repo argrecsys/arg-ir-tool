@@ -94,6 +94,19 @@ public class DataModel {
     }
 
     /**
+     *
+     * @param argumentId
+     * @return
+     */
+    public String getArgumentLabel(String argumentId) {
+        String label = "";
+        if (proposalLabels.containsKey(argumentId)) {
+            label = proposalLabels.get(argumentId).getLabel();
+        }
+        return label;
+    }
+
+    /**
      * Returns argument relation taxonomy.
      *
      * @return

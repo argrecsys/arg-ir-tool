@@ -61,12 +61,13 @@ public class InfoRetriever {
     }
 
     /**
-     *
+     * Document indexing module (4). Creates a full-text index (with Apache
+     * Lucene) on the documents.
      *
      * @param proposals
      * @param proposalSummaries
      */
-    public void createIndex(Map<Integer, DMProposal> proposals, Map<Integer, DMProposalSummary> proposalSummaries) {
+    public void createDocumentIndex(Map<Integer, DMProposal> proposals, Map<Integer, DMProposalSummary> proposalSummaries) {
         DMProposal proposal;
         int proposalId;
         String code;
@@ -102,13 +103,13 @@ public class InfoRetriever {
     }
 
     /**
-     * Searches (within the index) for records that fulfill a certain
-     * information need (query).
+     * Information retrieval module (5). Searches the full-text index for
+     * documents that meet the keyword-based query.
      *
      * @param querystr
      * @return
      */
-    public List<Integer> queryData(String querystr) {
+    public List<Integer> retrieveInformation(String querystr) {
         List<Integer> docList = new ArrayList<>();
 
         try {

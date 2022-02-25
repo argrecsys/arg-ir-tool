@@ -89,7 +89,7 @@ public class DataModel {
 
         // Data loading and IR index creation
         loadData();
-        createIndex();
+        createDocumentIndex();
         loadLabels();
     }
 
@@ -186,7 +186,7 @@ public class DataModel {
 
             // 1. Data querying, reranking and pagination
             start = System.nanoTime();
-            List<Integer> docList = fetchData(query, reRankBy);
+            List<Integer> docList = retrieveInformation(query, reRankBy);
             docList = filterDataByPage(docList, nPage);
             finish = System.nanoTime();
             timeElapsed1 = (int) ((finish - start) / 1000000);
@@ -271,39 +271,12 @@ public class DataModel {
     }
 
     /**
-     * Creates an Apache Lucene index of the data.
+     * Creates a full-text index (with Apache Lucene) on the documents.
      */
-    private void createIndex() {
-        FunctionUtils.printWithDatestamp(">> Creating Lucene index");
+    private void createDocumentIndex() {
+        FunctionUtils.printWithDatestamp(">> Creating Lucene full-text index");
         this.retriever = new InfoRetriever();
-        this.retriever.createIndex(proposals, proposalSummaries);
-    }
-
-    /**
-     * Query data from the index and use a cache to optimize queries.
-     *
-     * @param query
-     * @param reRankBy
-     * @return
-     */
-    private List<Integer> fetchData(String query, String reRankBy) {
-        List<Integer> docList;
-        String key = query + reRankBy;
-
-        if (cache.containsKey(key)) {
-            docList = cache.get(key);
-            FunctionUtils.printWithDatestamp(">> Loaded " + docList.size() + " hits");
-
-        } else {
-            List<Integer> ids = this.retriever.queryData(query);
-            FunctionUtils.printWithDatestamp(">> Found " + ids.size() + " hits");
-            docList = rankResults(ids, reRankBy);
-            FunctionUtils.printWithDatestamp(">> Data reranked by: " + reRankBy);
-            cache.put(key, docList);
-        }
-
-        nRows = docList.size();
-        return docList;
+        this.retriever.createDocumentIndex(proposals, proposalSummaries);
     }
 
     /**
@@ -319,6 +292,39 @@ public class DataModel {
         int end = Math.min(nPage * MAX_RECORDS_PER_PAGE, docList.size());
         docList = docList.subList(init, end);
         return docList;
+    }
+
+    /**
+     * Logarithm of the weighted sum of the quality and quantity of arguments in
+     * a document.
+     *
+     * @param id
+     * @return
+     */
+    private double getArgumentativeScore(int id) {
+        double score = 0.0;
+        if (proposalArguments.containsKey(id)) {
+            List<Argument> args = proposalArguments.get(id);
+            for (Argument arg : args) {
+                String label = getArgumentLabel(arg.getId()).toUpperCase();
+                if (label.equals("RELEVANT")) {
+                    score += 2.0;
+                } else if (label.equals("VALID") || label.equals("")) {
+                    score += 1.0;
+                }
+            }
+            score = Math.log(score);
+        }
+        return score;
+    }
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    private double getControversyScore(int id) {
+        return (controversyScores.containsKey(id) ? controversyScores.get(id).getValue() : 0.0);
     }
 
     /**
@@ -367,46 +373,77 @@ public class DataModel {
      *
      */
     private void loadLabels() {
-        FunctionUtils.printWithDatestamp(">> Loading labels");
+        FunctionUtils.printWithDatestamp(">> Loading argument labels");
         proposalLabels = IOManager.readDictFromCsvFile(LABELS_FILEPATH);
         FunctionUtils.printWithDatestamp(" - Number of argument labels: " + proposalLabels.size());
     }
 
     /**
-     * Ranks the results according to a specified criterion.
+     * Argument-based re-ranking module (6). Ranks the results according to a
+     * specified criterion.
      *
      * @param docs
      * @param reRankBy
      * @return
      */
-    private List<Integer> rankResults(List<Integer> ids, String reRankBy) {
+    private List<Integer> rerankingDocuments(List<Integer> ids, String reRankBy) {
         List<Integer> docList = new ArrayList<>();
+        reRankBy = reRankBy.toUpperCase();
 
         // Rerank
         if (ids.size() > 0 && !StringUtils.isEmpty(reRankBy)) {
-            if (reRankBy.equals("Nothing")) {
+            if (reRankBy.equals("NOTHING")) {
                 docList.addAll(ids);
 
-            } else if (reRankBy.equals("Arguments")) {
-                Map<Integer, Integer> argsByProp = new HashMap<>();
+            } else {
+                Map<Integer, Double> scores = new HashMap<>();
 
                 for (int id : ids) {
-                    int nArgs = (proposalArguments.containsKey(id) ? proposalArguments.get(id).size() : 0);
-                    argsByProp.put(id, nArgs);
-                }
-                docList.addAll(FunctionUtils.sortMapByIntValue(argsByProp).keySet());
+                    double score = 0.0;
+                    if (reRankBy.equals("ARGUMENTS")) {
+                        score = getArgumentativeScore(id);
 
-            } else if (reRankBy.equals("Controversy")) {
-                Map<Integer, Double> controvByProp = new HashMap<>();
-
-                for (int id : ids) {
-                    double score = (controversyScores.containsKey(id) ? controversyScores.get(id).getValue() : 0.0);
-                    controvByProp.put(id, score);
+                    } else if (reRankBy.equals("CONTROVERSY")) {
+                        score = getControversyScore(id);
+                    }
+                    scores.put(id, score);
                 }
-                docList.addAll(FunctionUtils.sortMapByDblValue(controvByProp).keySet());
+
+                docList.addAll(FunctionUtils.sortMapByDblValue(scores).keySet());
             }
         }
 
+        return docList;
+    }
+
+    /**
+     * Information retrieval and Argument-based re-ranking modules. Retrieves
+     * documents from the index and uses a cache to optimize queries.
+     *
+     * @param query
+     * @param reRankBy
+     * @return
+     */
+    private List<Integer> retrieveInformation(String query, String reRankBy) {
+        List<Integer> docList;
+        String key = query + reRankBy;
+
+        if (cache.containsKey(key)) {
+            docList = cache.get(key);
+            FunctionUtils.printWithDatestamp(">> Loaded " + docList.size() + " hits");
+
+        } else {
+            // Module 5
+            List<Integer> ids = this.retriever.retrieveInformation(query);
+            FunctionUtils.printWithDatestamp(">> Found " + ids.size() + " hits");
+
+            // Module 6
+            docList = rerankingDocuments(ids, reRankBy);
+            FunctionUtils.printWithDatestamp(">> Data reranked by: " + reRankBy);
+            cache.put(key, docList);
+        }
+
+        nRows = docList.size();
         return docList;
     }
 

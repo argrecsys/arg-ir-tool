@@ -304,16 +304,26 @@ public class DataModel {
     private double getArgumentativeScore(int id) {
         double score = 0.0;
         if (proposalArguments.containsKey(id)) {
+
+            // Calculation
             List<Argument> args = proposalArguments.get(id);
             for (Argument arg : args) {
                 String label = getArgumentLabel(arg.getId()).toUpperCase();
                 if (label.equals("RELEVANT")) {
                     score += 2.0;
-                } else if (label.equals("VALID") || label.equals("")) {
+                } else if (label.equals("VALID")) {
                     score += 1.0;
+                } else if (label.equals("")) {
+                    score += 0.5;
                 }
             }
-            score = Math.log(score);
+
+            // Normalization
+            if (score <= 1) {
+                score = 0.150515;
+            } else {
+                score = Math.log(score);
+            }
         }
         return score;
     }

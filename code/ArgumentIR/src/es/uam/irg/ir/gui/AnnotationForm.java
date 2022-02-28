@@ -202,7 +202,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         btnPremise = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setTitle("Arguments Configuration Form");
+        setTitle("Arguments Annotation Form");
         setModal(true);
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {

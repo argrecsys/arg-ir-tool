@@ -71,6 +71,7 @@ public class DataModel {
     private Map<Integer, DMProposalSummary> proposalSummaries;
     private Map<Integer, DMProposal> proposals;
     private InfoRetriever retriever;
+    private int totalArgs;
 
     /**
      * Constructor.
@@ -307,6 +308,8 @@ public class DataModel {
 
             // Calculation
             List<Argument> args = proposalArguments.get(id);
+            totalArgs += args.size();
+
             for (Argument arg : args) {
                 String label = getArgumentLabel(arg.getId()).toUpperCase();
                 if (label.equals("RELEVANT")) {
@@ -407,7 +410,7 @@ public class DataModel {
 
             } else {
                 Map<Integer, Double> scores = new HashMap<>();
-
+                totalArgs = 0;
                 for (int id : ids) {
                     double score = 0.0;
                     if (reRankBy.equals("ARGUMENTS")) {
@@ -420,6 +423,7 @@ public class DataModel {
                 }
 
                 docList.addAll(FunctionUtils.sortMapByDblValue(scores).keySet());
+                FunctionUtils.printWithDatestamp(" - Number of retrieved arguments: " + totalArgs);
             }
         }
 

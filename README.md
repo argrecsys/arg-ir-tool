@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
 ![version](https://img.shields.io/badge/version-0.9.10-blue)
-![last-update](https://img.shields.io/badge/last_update-2/28/2022-orange)
+![last-update](https://img.shields.io/badge/last_update-3/1/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 Argument-enhanced information retrieval project repository. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
@@ -17,7 +17,6 @@ Argument-enhanced Information Retrieval Tool:
 Arguments Annotation Form:
 
 ![arg-ir-gui-annotation](https://raw.githubusercontent.com/argrecsys/arg-enhanced-ir/main/images/gui-annotation.gif)
-
 
 ## Dependencies
 The implemented solutions depend on or make use of the following libraries and .jar files:

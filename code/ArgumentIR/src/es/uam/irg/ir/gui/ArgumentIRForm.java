@@ -215,7 +215,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
 
         lblRerankBy.setText("Rerank by:");
 
-        cmbReranks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nothing", "Arguments", "Controversy" }));
+        cmbReranks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nothing", "Controversy", "Arguments" }));
 
         lblOfN.setText("of N");
 

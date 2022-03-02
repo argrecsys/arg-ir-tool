@@ -19,8 +19,10 @@ package es.uam.irg.ir;
 
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.decidemadrid.entities.DMProposalSummary;
+import es.uam.irg.utils.FunctionUtils;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -47,6 +49,8 @@ import org.apache.lucene.store.Directory;
  * Argument-enhanced information retrieval engine.
  */
 public class InfoRetriever {
+
+    public static final double LAMBDA = 0.55;
 
     // The same analyzer should be used for indexing and searching
     private final StandardAnalyzer analyzer;
@@ -103,13 +107,27 @@ public class InfoRetriever {
     }
 
     /**
-     * Information retrieval module (5). Searches the full-text index for
-     * documents that meet the keyword-based query.
+     * Information retrieval module (5 and 6). Searches the full-text index for
+     * documents that meet the keyword-based query and ranks the results
+     * according to a specified criterion.
      *
      * @param querystr
      * @return
      */
     public List<Integer> retrieveInformation(String querystr) {
+        return retrieveInformation(querystr, new HashMap<>());
+    }
+
+    /**
+     * Information retrieval module (5 and 6). Searches the full-text index for
+     * documents that meet the keyword-based query and ranks the results
+     * according to a specified criterion.
+     *
+     * @param querystr
+     * @param scores
+     * @return
+     */
+    public List<Integer> retrieveInformation(String querystr, Map<Integer, Double> scores) {
         List<Integer> docList = new ArrayList<>();
 
         try {
@@ -122,13 +140,32 @@ public class InfoRetriever {
                 TopDocs docs = searcher.search(q, Integer.MAX_VALUE);
                 ScoreDoc[] hits = docs.scoreDocs;
 
-                // Store results
-                for (int i = 0; i < hits.length; ++i) {
-                    int docId = hits[i].doc;
-                    Document doc = searcher.doc(docId);
-                    int proposalId = Integer.parseInt(doc.get("id"));
-                    docList.add(proposalId);
+                if (hits.length > 0) {
+                    Map<Integer, Double> result = new HashMap<>();
+
+                    // Store results
+                    for (int i = 0; i < hits.length; ++i) {
+                        int docId = hits[i].doc;
+                        Document doc = searcher.doc(docId);
+                        int proposalId = Integer.parseInt(doc.get("id"));
+
+                        // Calculate score
+                        double proposaScore = hits[i].score;
+                        if (scores.size() > 0) {
+                            proposaScore = LAMBDA * proposaScore + (1 - LAMBDA) * (scores.containsKey(proposalId) ? scores.get(proposalId) : 0.0);
+                        }
+
+                        result.put(proposalId, proposaScore);
+                    }
+
+                    // Final sorting
+                    if (scores.size() > 0) {
+                        docList.addAll(FunctionUtils.sortMapByDblValue(result).keySet());
+                    } else {
+                        docList.addAll(result.keySet());
+                    }
                 }
+
             }
 
         } catch (ParseException | IOException ex) {

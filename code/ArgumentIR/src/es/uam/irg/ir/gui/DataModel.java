@@ -31,7 +31,6 @@ import es.uam.irg.ir.InfoRetriever;
 import es.uam.irg.nlp.am.arguments.Argument;
 import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.utils.FunctionUtils;
-import es.uam.irg.utils.StringUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public class DataModel {
     private final Map<String, Object> msqlSetup;
 
     // Class data variables
-    private Map<Integer, ControversyScore> controversyScores;
+    private Map<Integer, Double> controversyScores;
     private boolean isDirty;
     private int nRows;
     private Map<Integer, List<Argument>> proposalArguments;
@@ -202,7 +201,7 @@ public class DataModel {
                 DMProposalSummary summary = proposalSummaries.get(docId);
                 List<DMCommentTree> commentTrees = proposalCommentTrees.get(docId);
                 List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
-                double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId).getValue() : 0.0);
+                double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId) : 0.0);
 
                 String report = this.formatter.getProposalInfoReport(ix, proposal, summary, commentTrees, proposalComments, arguments, controversy, proposalLabels);
                 body.append(report);
@@ -302,13 +301,13 @@ public class DataModel {
      * @param id
      * @return
      */
-    private double getArgumentativeScore(int id) {
-        double score = 0.0;
-        if (proposalArguments.containsKey(id)) {
+    private Map<Integer, Double> getArgumentativeScores() {
+        Map<Integer, Double> scores = new HashMap<>();
 
-            // Calculation
-            List<Argument> args = proposalArguments.get(id);
+        proposalArguments.keySet().forEach(docId -> {
+            List<Argument> args = proposalArguments.get(docId);
             totalArgs += args.size();
+            double score = 0.0;
 
             for (Argument arg : args) {
                 String label = getArgumentLabel(arg.getId()).toUpperCase();
@@ -327,8 +326,11 @@ public class DataModel {
             } else {
                 score = Math.log(score);
             }
-        }
-        return score;
+
+            scores.put(docId, score);
+        });
+
+        return scores;
     }
 
     /**
@@ -336,8 +338,15 @@ public class DataModel {
      * @param id
      * @return
      */
-    private double getControversyScore(int id) {
-        return (controversyScores.containsKey(id) ? controversyScores.get(id).getValue() : 0.0);
+    private Map<Integer, Double> getControversyScores(Map<Integer, ControversyScore> controversyScores) {
+        Map<Integer, Double> scores = new HashMap<>();
+
+        controversyScores.keySet().forEach(docId -> {
+            double score = controversyScores.get(docId).getValue();
+            scores.put(docId, score);
+        });
+
+        return scores;
     }
 
     /**
@@ -374,7 +383,7 @@ public class DataModel {
             FunctionUtils.printWithDatestamp(" - Number of arguments: " + proposalArguments.size());
 
             // Get proposal controversy scores
-            controversyScores = dbManager.selectProposalControversy();
+            controversyScores = getControversyScores(dbManager.selectProposalControversy());
             FunctionUtils.printWithDatestamp(" - Number of controversy scores: " + controversyScores.size());
 
         } catch (Exception ex) {
@@ -389,45 +398,6 @@ public class DataModel {
         FunctionUtils.printWithDatestamp(">> Loading argument labels");
         proposalLabels = IOManager.readDictFromCsvFile(LABELS_FILEPATH);
         FunctionUtils.printWithDatestamp(" - Number of argument labels: " + proposalLabels.size());
-    }
-
-    /**
-     * Argument-based re-ranking module (6). Ranks the results according to a
-     * specified criterion.
-     *
-     * @param docs
-     * @param reRankBy
-     * @return
-     */
-    private List<Integer> rerankingDocuments(List<Integer> ids, String reRankBy) {
-        List<Integer> docList = new ArrayList<>();
-        reRankBy = reRankBy.toUpperCase();
-
-        // Rerank
-        if (ids.size() > 0 && !StringUtils.isEmpty(reRankBy)) {
-            if (reRankBy.equals("NOTHING")) {
-                docList.addAll(ids);
-
-            } else {
-                Map<Integer, Double> scores = new HashMap<>();
-                totalArgs = 0;
-                for (int id : ids) {
-                    double score = 0.0;
-                    if (reRankBy.equals("ARGUMENTS")) {
-                        score = getArgumentativeScore(id);
-
-                    } else if (reRankBy.equals("CONTROVERSY")) {
-                        score = getControversyScore(id);
-                    }
-                    scores.put(id, score);
-                }
-
-                docList.addAll(FunctionUtils.sortMapByDblValue(scores).keySet());
-                FunctionUtils.printWithDatestamp(" - Number of retrieved arguments: " + totalArgs);
-            }
-        }
-
-        return docList;
     }
 
     /**
@@ -447,13 +417,27 @@ public class DataModel {
             FunctionUtils.printWithDatestamp(">> Loaded " + docList.size() + " hits");
 
         } else {
-            // Module 5
-            List<Integer> ids = this.retriever.retrieveInformation(query);
-            FunctionUtils.printWithDatestamp(">> Found " + ids.size() + " hits");
-
-            // Module 6
-            docList = rerankingDocuments(ids, reRankBy);
+            // Module 5 & 6
             FunctionUtils.printWithDatestamp(">> Data reranked by: " + reRankBy);
+
+            reRankBy = reRankBy.toUpperCase();
+            if (reRankBy.equals("NOTHING")) {
+                docList = this.retriever.retrieveInformation(query);
+
+            } else {
+                Map<Integer, Double> scores = new HashMap<>();
+                if (reRankBy.equals("ARGUMENTS")) {
+                    totalArgs = 0;
+                    scores = getArgumentativeScores();
+                    FunctionUtils.printWithDatestamp(" - Number of retrieved arguments: " + totalArgs);
+
+                } else if (reRankBy.equals("CONTROVERSY")) {
+                    scores = controversyScores;
+                }
+
+                docList = this.retriever.retrieveInformation(query, scores);
+            }
+            FunctionUtils.printWithDatestamp(">> Found " + docList.size() + " hits");
             cache.put(key, docList);
         }
 

@@ -70,7 +70,6 @@ public class DataModel {
     private Map<Integer, DMProposalSummary> proposalSummaries;
     private Map<Integer, DMProposal> proposals;
     private InfoRetriever retriever;
-    private int totalArgs;
 
     /**
      * Constructor.
@@ -200,7 +199,7 @@ public class DataModel {
                 DMProposal proposal = proposals.get(docId);
                 DMProposalSummary summary = proposalSummaries.get(docId);
                 List<DMCommentTree> commentTrees = proposalCommentTrees.get(docId);
-                List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
+                List<Argument> arguments = proposalArguments.get(docId);
                 double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId) : 0.0);
 
                 String report = this.formatter.getProposalInfoReport(ix, proposal, summary, commentTrees, proposalComments, arguments, controversy, proposalLabels);
@@ -303,8 +302,9 @@ public class DataModel {
      */
     private Map<Integer, Double> getArgumentativeScores() {
         Map<Integer, Double> scores = new HashMap<>();
+        int totalArgs = 0;
 
-        proposalArguments.keySet().forEach(docId -> {
+        for (int docId : proposalArguments.keySet()) {
             List<Argument> args = proposalArguments.get(docId);
             totalArgs += args.size();
             double score = 0.0;
@@ -328,8 +328,9 @@ public class DataModel {
             }
 
             scores.put(docId, score);
-        });
+        }
 
+        FunctionUtils.printWithDatestamp(" - Number of retrieved arguments: " + totalArgs);
         return scores;
     }
 
@@ -387,7 +388,8 @@ public class DataModel {
             FunctionUtils.printWithDatestamp(" - Number of controversy scores: " + controversyScores.size());
 
         } catch (Exception ex) {
-            Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(InfoRetriever.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -410,7 +412,7 @@ public class DataModel {
      */
     private List<Integer> retrieveInformation(String query, String reRankBy) {
         List<Integer> docList;
-        String key = query + reRankBy;
+        String key = (query + "|" + reRankBy).toLowerCase();
 
         if (cache.containsKey(key)) {
             docList = cache.get(key);
@@ -427,9 +429,7 @@ public class DataModel {
             } else {
                 Map<Integer, Double> scores = new HashMap<>();
                 if (reRankBy.equals("ARGUMENTS")) {
-                    totalArgs = 0;
                     scores = getArgumentativeScores();
-                    FunctionUtils.printWithDatestamp(" - Number of retrieved arguments: " + totalArgs);
 
                 } else if (reRankBy.equals("CONTROVERSY")) {
                     scores = controversyScores;

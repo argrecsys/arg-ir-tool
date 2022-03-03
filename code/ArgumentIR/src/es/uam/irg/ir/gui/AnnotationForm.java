@@ -172,6 +172,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         }
 
         this.txtMessage.setText(sentence);
+        this.txtMessage.setCaretPosition(0);
     }
 
     /**
@@ -341,12 +342,12 @@ public class AnnotationForm extends javax.swing.JDialog {
                     .addComponent(btnClaim)
                     .addComponent(btnPremise))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
                     .addComponent(btnClose))
-                .addContainerGap())
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         pack();

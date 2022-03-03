@@ -199,7 +199,7 @@ public class DataModel {
                 DMProposal proposal = proposals.get(docId);
                 DMProposalSummary summary = proposalSummaries.get(docId);
                 List<DMCommentTree> commentTrees = proposalCommentTrees.get(docId);
-                List<Argument> arguments = (reRankBy.equals("Arguments") ? proposalArguments.get(docId) : new ArrayList<>());
+                List<Argument> arguments = proposalArguments.get(docId);
                 double controversy = (controversyScores.containsKey(docId) ? controversyScores.get(docId) : 0.0);
 
                 String report = this.formatter.getProposalInfoReport(ix, proposal, summary, commentTrees, proposalComments, arguments, controversy, proposalLabels);

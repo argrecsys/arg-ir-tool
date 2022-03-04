@@ -161,6 +161,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         lblRerankBy = new javax.swing.JLabel();
         cmbReranks = new javax.swing.JComboBox<>();
         lblOfN = new javax.swing.JLabel();
+        lblSimilarity = new javax.swing.JLabel();
+        cmbSimilarity = new javax.swing.JComboBox<>();
         menuBar = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
         mItemExportHtml = new javax.swing.JMenuItem();
@@ -218,6 +220,10 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         cmbReranks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nothing", "Controversy", "Arguments" }));
 
         lblOfN.setText("of N");
+
+        lblSimilarity.setText("Similarity:");
+
+        cmbSimilarity.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "BM25", "Cosine", "Dirichlet" }));
 
         menuFile.setText("File");
 
@@ -284,7 +290,11 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblRerankBy)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblSimilarity)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmbSimilarity, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(lblPage)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -317,7 +327,9 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     .addComponent(cmbPage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblRerankBy)
                     .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblOfN))
+                    .addComponent(lblOfN)
+                    .addComponent(lblSimilarity)
+                    .addComponent(cmbSimilarity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
                 .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
                 .addGap(20, 20, 20))
@@ -336,9 +348,10 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         // TODO add your handling code here:
         String query = this.txtQuery.getText().trim();
         String reRankBy = this.cmbReranks.getSelectedItem().toString();
+        String similarity = this.cmbSimilarity.getSelectedItem().toString();
 
         // Query data
-        String result = this.model.getQueryResult(query, reRankBy, 1);
+        String result = this.model.getQueryResult(query, reRankBy, similarity, 1);
         updatePagesComboBox();
 
         // Display report
@@ -457,10 +470,11 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         if (this.doEvents) {
             String query = this.txtQuery.getText().trim();
             String reRankBy = this.cmbReranks.getSelectedItem().toString();
+            String similarity = this.cmbSimilarity.getSelectedItem().toString();
             int nPage = Integer.parseInt(this.cmbPage.getSelectedItem().toString());
 
             // Query data
-            String result = this.model.getQueryResult(query, reRankBy, nPage);
+            String result = this.model.getQueryResult(query, reRankBy, similarity, nPage);
 
             // Display report
             this.txtResult.setText(result);
@@ -519,11 +533,13 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private javax.swing.JButton btnSearch;
     private javax.swing.JComboBox<String> cmbPage;
     private javax.swing.JComboBox<String> cmbReranks;
+    private javax.swing.JComboBox<String> cmbSimilarity;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JLabel lblOfN;
     private javax.swing.JLabel lblPage;
     private javax.swing.JLabel lblQuery;
     private javax.swing.JLabel lblRerankBy;
+    private javax.swing.JLabel lblSimilarity;
     private javax.swing.JMenuItem mItemAbout;
     private javax.swing.JMenuItem mItemClose;
     private javax.swing.JMenuItem mItemExportHtml;

@@ -42,6 +42,10 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
+import org.apache.lucene.search.similarities.LMDirichletSimilarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 
@@ -50,7 +54,7 @@ import org.apache.lucene.store.Directory;
  */
 public class InfoRetriever {
 
-    public static final double LAMBDA = 0.55;
+    public static final double LAMBDA = 0.60;
 
     // The same analyzer should be used for indexing and searching
     private final StandardAnalyzer analyzer;
@@ -107,27 +111,29 @@ public class InfoRetriever {
     }
 
     /**
-     * Information retrieval module (5 and 6). Searches the full-text index for
+     * Information retrieval module (5 and 6).Searches the full-text index for
      * documents that meet the keyword-based query and ranks the results
      * according to a specified criterion.
      *
      * @param querystr
+     * @param similarity
      * @return
      */
-    public List<Integer> retrieveInformation(String querystr) {
-        return retrieveInformation(querystr, new HashMap<>());
+    public List<Integer> retrieveInformation(String querystr, String similarity) {
+        return retrieveInformation(querystr, similarity, null);
     }
 
     /**
-     * Information retrieval module (5 and 6). Searches the full-text index for
+     * Information retrieval module (5 and 6).Searches the full-text index for
      * documents that meet the keyword-based query and ranks the results
      * according to a specified criterion.
      *
      * @param querystr
+     * @param similarity
      * @param scores
      * @return
      */
-    public List<Integer> retrieveInformation(String querystr, Map<Integer, Double> scores) {
+    public List<Integer> retrieveInformation(String querystr, String similarity, Map<Integer, Double> scores) {
         List<Integer> docList = new ArrayList<>();
 
         try {
@@ -137,6 +143,7 @@ public class InfoRetriever {
             // Search within the index
             try ( IndexReader reader = DirectoryReader.open(index)) {
                 IndexSearcher searcher = new IndexSearcher(reader);
+                searcher.setSimilarity(getSimilarity(similarity));
                 TopDocs docs = searcher.search(q, Integer.MAX_VALUE);
                 ScoreDoc[] hits = docs.scoreDocs;
 
@@ -150,16 +157,17 @@ public class InfoRetriever {
                         int proposalId = Integer.parseInt(doc.get("id"));
 
                         // Calculate score
-                        double proposaScore = hits[i].score;
-                        if (scores.size() > 0) {
-                            proposaScore = LAMBDA * proposaScore + (1 - LAMBDA) * (scores.containsKey(proposalId) ? scores.get(proposalId) : 0.0);
+                        double proposalScore = hits[i].score;
+                        if (scores != null) {
+                            double argumentativeScore = (scores.containsKey(proposalId) ? scores.get(proposalId) : 0.0);
+                            proposalScore = LAMBDA * proposalScore + (1 - LAMBDA) * argumentativeScore;
                         }
 
-                        result.put(proposalId, proposaScore);
+                        result.put(proposalId, proposalScore);
                     }
 
                     // Final sorting
-                    if (scores.size() > 0) {
+                    if (scores != null) {
                         docList.addAll(FunctionUtils.sortMapByDblValue(result).keySet());
                     } else {
                         docList.addAll(result.keySet());
@@ -198,6 +206,30 @@ public class InfoRetriever {
         doc.add(new TextField("districts", districts, Field.Store.YES));
         doc.add(new TextField("topics", topics, Field.Store.YES));
         iw.addDocument(doc);
+    }
+
+    /**
+     *
+     * @param similarity
+     * @return
+     */
+    private Similarity getSimilarity(String similarity) {
+        Similarity metric = null;
+        similarity = similarity.toUpperCase();
+
+        if (similarity.equals("BM25")) {
+            float k1 = 1.2f;
+            float b = 0.75f;
+            metric = new BM25Similarity(k1, b);
+
+        } else if (similarity.equals("COSINE")) {
+            metric = new ClassicSimilarity();
+
+        } else if (similarity.equals("DIRICHLET")) {
+            metric = new LMDirichletSimilarity();
+        }
+
+        return metric;
     }
 
 }

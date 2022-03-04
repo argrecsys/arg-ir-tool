@@ -400,8 +400,8 @@ public class AnnotationForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnSaveActionPerformed
 
     /**
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
         // TODO add your handling code here:
@@ -414,8 +414,8 @@ public class AnnotationForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnClearActionPerformed
 
     /**
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void btnClaimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClaimActionPerformed
         // TODO add your handling code here:
@@ -424,8 +424,8 @@ public class AnnotationForm extends javax.swing.JDialog {
     }//GEN-LAST:event_btnClaimActionPerformed
 
     /**
-     * 
-     * @param evt 
+     *
+     * @param evt
      */
     private void btnPremiseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPremiseActionPerformed
         // TODO add your handling code here:

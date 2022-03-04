@@ -169,10 +169,11 @@ public class DataModel {
      *
      * @param query
      * @param reRankBy
+     * @param similarity
      * @param nPage
      * @return
      */
-    public String getQueryResult(String query, String reRankBy, int nPage) {
+    public String getQueryResult(String query, String reRankBy, String similarity, int nPage) {
         String result = "";
 
         if (query.isEmpty()) {
@@ -185,7 +186,7 @@ public class DataModel {
 
             // 1. Data querying, reranking and pagination
             start = System.nanoTime();
-            List<Integer> docList = retrieveInformation(query, reRankBy);
+            List<Integer> docList = retrieveInformation(query, reRankBy, similarity);
             docList = filterDataByPage(docList, nPage);
             finish = System.nanoTime();
             timeElapsed1 = (int) ((finish - start) / 1000000);
@@ -405,14 +406,15 @@ public class DataModel {
     /**
      * Information retrieval and Argument-based re-ranking modules. Retrieves
      * documents from the index and uses a cache to optimize queries.
-     *
+     * 
      * @param query
      * @param reRankBy
-     * @return
+     * @param similarity
+     * @return 
      */
-    private List<Integer> retrieveInformation(String query, String reRankBy) {
+    private List<Integer> retrieveInformation(String query, String reRankBy, String similarity) {
         List<Integer> docList;
-        String key = (query + "|" + reRankBy).toLowerCase();
+        String key = (query + "|" + reRankBy + "|" + similarity).toLowerCase();
 
         if (cache.containsKey(key)) {
             docList = cache.get(key);
@@ -424,7 +426,7 @@ public class DataModel {
 
             reRankBy = reRankBy.toUpperCase();
             if (reRankBy.equals("NOTHING")) {
-                docList = this.retriever.retrieveInformation(query);
+                docList = this.retriever.retrieveInformation(query, similarity);
 
             } else {
                 Map<Integer, Double> scores = new HashMap<>();
@@ -435,7 +437,7 @@ public class DataModel {
                     scores = controversyScores;
                 }
 
-                docList = this.retriever.retrieveInformation(query, scores);
+                docList = this.retriever.retrieveInformation(query, similarity, scores);
             }
             FunctionUtils.printWithDatestamp(">> Found " + docList.size() + " hits");
             cache.put(key, docList);

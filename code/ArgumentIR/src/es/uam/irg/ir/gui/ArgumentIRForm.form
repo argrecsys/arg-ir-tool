@@ -111,7 +111,11 @@
                   <Group type="102" attributes="0">
                       <Component id="lblRerankBy" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cmbReranks" min="-2" pref="150" max="-2" attributes="0"/>
+                      <Component id="cmbReranks" min="-2" pref="120" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblSimilarity" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cmbSimilarity" min="-2" pref="100" max="-2" attributes="0"/>
                       <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                       <Component id="lblPage" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -153,6 +157,8 @@
                   <Component id="lblRerankBy" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cmbReranks" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="lblOfN" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblSimilarity" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cmbSimilarity" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
               <Component id="scrollPane" pref="466" max="32767" attributes="0"/>
@@ -244,6 +250,25 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="of N"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblSimilarity">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Similarity:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="cmbSimilarity">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="3">
+            <StringItem index="0" value="BM25"/>
+            <StringItem index="1" value="Cosine"/>
+            <StringItem index="2" value="Dirichlet"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

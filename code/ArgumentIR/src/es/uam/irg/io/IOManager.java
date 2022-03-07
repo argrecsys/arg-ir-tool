@@ -59,18 +59,20 @@ public class IOManager {
                     String row;
                     ArgumentLabel label;
                     String id;
-                    String value;
+                    String relevance;
+                    String quality;
                     String timestamp;
 
                     reader.readLine();
                     while ((row = reader.readLine()) != null) {
                         String[] data = row.split(",");
 
-                        if (data.length == 4) {
+                        if (data.length == 5) {
                             id = data[1];
-                            value = data[2];
-                            timestamp = data[3];
-                            label = new ArgumentLabel(id, value, timestamp);
+                            relevance = data[2];
+                            quality = data[3];
+                            timestamp = data[4];
+                            label = new ArgumentLabel(id, relevance, quality, timestamp);
                             csvData.put(id, label);
                         }
                     }

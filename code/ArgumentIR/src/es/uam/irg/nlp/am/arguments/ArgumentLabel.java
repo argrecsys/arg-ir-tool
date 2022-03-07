@@ -26,19 +26,22 @@ import es.uam.irg.utils.StringUtils;
 public class ArgumentLabel {
 
     private final String argumentId;
-    private final String label;
     private final int proposalId;
+    private final String quality;
+    private final String relevance;
     private final String timeStamp;
 
     /**
      *
      * @param argumentId
-     * @param label
+     * @param relevance
+     * @param quality
      * @param timeStamp
      */
-    public ArgumentLabel(String argumentId, String label, String timeStamp) {
+    public ArgumentLabel(String argumentId, String relevance, String quality, String timeStamp) {
         this.argumentId = argumentId;
-        this.label = label;
+        this.relevance = labelQuality(relevance);
+        this.quality = labelQuality(quality);
         this.timeStamp = timeStamp;
 
         if (!StringUtils.isEmpty(this.argumentId)) {
@@ -50,16 +53,39 @@ public class ArgumentLabel {
         }
     }
 
-    public String getLabel() {
-        return this.label;
-    }
-
     public int getProposalId() {
         return this.proposalId;
     }
 
+    /**
+     * Get the argument rhetoric quality.
+     *
+     * @return
+     */
+    public String getQuality() {
+        return this.quality;
+    }
+
+    /**
+     * Get the argument topical relevance.
+     *
+     * @return
+     */
+    public String getRelevance() {
+        return this.relevance;
+    }
+
     @Override
     public String toString() {
-        return String.format("%d,%s,%s,%s", proposalId, argumentId, label, timeStamp);
+        return String.format("%d,%s,%s,%s,%s", proposalId, argumentId, relevance, quality, timeStamp);
+    }
+
+    /**
+     *
+     * @param value
+     * @return
+     */
+    private String labelQuality(String value) {
+        return value.toUpperCase().replace(" ", "_");
     }
 }

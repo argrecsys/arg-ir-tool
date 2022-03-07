@@ -276,17 +276,26 @@ public class StringUtils {
      * @return
      */
     public static String toTitleCase(String s) {
-        StringBuilder sb = new StringBuilder();
-        String ACTIONABLE_DELIMITERS = " '-/";
-        boolean capNext = true;
-
-        for (char c : s.toCharArray()) {
-            c = (capNext) ? Character.toUpperCase(c) : Character.toLowerCase(c);
-            sb.append(c);
-            capNext = (ACTIONABLE_DELIMITERS.indexOf((int) c) >= 0);
+        if (StringUtils.isEmpty(s)) {
+            return "";
         }
 
-        return sb.toString();
+        StringBuilder converted = new StringBuilder();
+
+        boolean convertNext = true;
+        for (char ch : s.toCharArray()) {
+            if (Character.isSpaceChar(ch)) {
+                convertNext = true;
+            } else if (convertNext) {
+                ch = Character.toTitleCase(ch);
+                convertNext = false;
+            } else {
+                ch = Character.toLowerCase(ch);
+            }
+            converted.append(ch);
+        }
+
+        return converted.toString().trim();
     }
 
     /**

@@ -312,18 +312,21 @@ public class DataModel {
 
             for (Argument arg : args) {
                 ArgumentLabel label = getArgumentLabel(arg.getId());
-                String relevance = label.getRelevance().toUpperCase();
 
-                if (relevance.equals("VERY_RELEVANT")) {
-                    score += 3.0;
-                } else if (relevance.equals("RELEVANT")) {
-                    score += 2.0;
-                } else if (relevance.equals("NOT_RELEVANT")) {
-                    score += 1.0;
-                } else if (relevance.equals("")) {
+                if (label != null) {
+                    String relevance = label.getRelevance().toUpperCase();
+
+                    if (relevance.equals("VERY_RELEVANT")) {
+                        score += 3.0;
+                    } else if (relevance.equals("RELEVANT")) {
+                        score += 2.0;
+                    } else if (relevance.equals("NOT_RELEVANT")) {
+                        score += 1.0;
+                    } else if (relevance.equals("SPAM")) {
+                        score += -2;
+                    }
+                } else {
                     score += 0.5;
-                } else if (relevance.equals("SPAM")) {
-                    score += -2;
                 }
             }
 

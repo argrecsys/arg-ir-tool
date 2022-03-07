@@ -136,6 +136,15 @@ public class AnnotationForm extends javax.swing.JDialog {
 
     /**
      *
+     * @param relevance
+     * @return
+     */
+    private String convertLabelToTitle(String label) {
+        return StringUtils.toTitleCase(label.replace("_", " "));
+    }
+
+    /**
+     *
      * @param display
      * @param type
      * @param date
@@ -150,8 +159,8 @@ public class AnnotationForm extends javax.swing.JDialog {
             this.cmbIntention.setSelectedItem(StringUtils.toTitleCase(linker.getIntention()));
         }
         if (label != null) {
-            this.cmbTopicalRelevance.setSelectedItem(StringUtils.toTitleCase(label.getRelevance()));
-            this.cmbRhetoricQuality.setSelectedItem(StringUtils.toTitleCase(label.getQuality()));
+            this.cmbTopicalRelevance.setSelectedItem(convertLabelToTitle(label.getRelevance()));
+            this.cmbRhetoricQuality.setSelectedItem(convertLabelToTitle(label.getQuality()));
         }
         highlightArgument();
         this.setVisible(display);
@@ -298,7 +307,7 @@ public class AnnotationForm extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(lblType)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cmbType, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -313,8 +322,7 @@ public class AnnotationForm extends javax.swing.JDialog {
                                 .addComponent(btnSave)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnClose))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(lblEvaluation)
@@ -330,11 +338,11 @@ public class AnnotationForm extends javax.swing.JDialog {
                                             .addGap(30, 30, 30)
                                             .addComponent(lblRelation)
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                            .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(cmbIntention, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addComponent(cmbIntention, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
                                         .addGroup(layout.createSequentialGroup()
                                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                 .addComponent(cmbTopicalRelevance, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -347,7 +355,8 @@ public class AnnotationForm extends javax.swing.JDialog {
                                                     .addComponent(cmbRhetoricQuality, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                                                 .addGroup(layout.createSequentialGroup()
                                                     .addGap(32, 32, 32)
-                                                    .addComponent(lblRhetoricQuality))))))))
+                                                    .addComponent(lblRhetoricQuality))))))
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 659, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 20, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(

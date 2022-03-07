@@ -20,6 +20,7 @@ package es.uam.irg.ir.gui;
 import es.uam.irg.decidemadrid.entities.DMComment;
 import es.uam.irg.decidemadrid.entities.DMProposal;
 import es.uam.irg.nlp.am.arguments.Argument;
+import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.nlp.am.arguments.ArgumentLinker;
 import es.uam.irg.nlp.am.arguments.ArgumentPattern;
 import es.uam.irg.nlp.am.arguments.Sentence;
@@ -94,7 +95,7 @@ public class AnnotationForm extends javax.swing.JDialog {
                 this.sentPremise = this.sentArg.premise.getText();
                 linker = this.sentArg.linker;
             }
-            String label = model.getArgumentLabel(argumentId);
+            ArgumentLabel label = model.getArgumentLabel(argumentId);
 
             // Fill graphic controls
             fillGUI(true, "Proposal", proposal.getDate(), linker, label);
@@ -126,7 +127,7 @@ public class AnnotationForm extends javax.swing.JDialog {
                 this.sentPremise = this.sentArg.premise.getText();
                 linker = this.sentArg.linker;
             }
-            String label = model.getArgumentLabel(argumentId);
+            ArgumentLabel label = model.getArgumentLabel(argumentId);
 
             // Fill graphic controls
             fillGUI(true, "Comment", comment.getDate(), linker, label);
@@ -140,7 +141,7 @@ public class AnnotationForm extends javax.swing.JDialog {
      * @param date
      * @param label
      */
-    private void fillGUI(boolean display, String type, String date, ArgumentLinker linker, String label) {
+    private void fillGUI(boolean display, String type, String date, ArgumentLinker linker, ArgumentLabel label) {
         this.cmbType.setSelectedItem(type);
         this.txtDate.setText(date);
         if (linker != null) {
@@ -148,8 +149,9 @@ public class AnnotationForm extends javax.swing.JDialog {
             this.cmbSubCategory.setSelectedItem(StringUtils.toTitleCase(linker.getSubCategory()));
             this.cmbIntention.setSelectedItem(StringUtils.toTitleCase(linker.getIntention()));
         }
-        if (!StringUtils.isEmpty(label)) {
-            this.cmbLabel.setSelectedItem(StringUtils.toTitleCase(label));
+        if (label != null) {
+            this.cmbTopicalRelevance.setSelectedItem(StringUtils.toTitleCase(label.getRelevance()));
+            this.cmbRhetoricQuality.setSelectedItem(StringUtils.toTitleCase(label.getQuality()));
         }
         highlightArgument();
         this.setVisible(display);
@@ -195,12 +197,16 @@ public class AnnotationForm extends javax.swing.JDialog {
         lblRelation = new javax.swing.JLabel();
         cmbCategory = new javax.swing.JComboBox<>();
         cmbSubCategory = new javax.swing.JComboBox<>();
-        lblLabel = new javax.swing.JLabel();
-        cmbLabel = new javax.swing.JComboBox<>();
+        lblEvaluation = new javax.swing.JLabel();
+        cmbTopicalRelevance = new javax.swing.JComboBox<>();
         cmbIntention = new javax.swing.JComboBox<>();
         btnClear = new javax.swing.JButton();
         btnClaim = new javax.swing.JButton();
         btnPremise = new javax.swing.JButton();
+        lnlAnnotation = new javax.swing.JLabel();
+        lblTopicalRelevance = new javax.swing.JLabel();
+        cmbRhetoricQuality = new javax.swing.JComboBox<>();
+        lblRhetoricQuality = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Arguments Annotation Form");
@@ -250,9 +256,9 @@ public class AnnotationForm extends javax.swing.JDialog {
 
         cmbSubCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)" }));
 
-        lblLabel.setText("Label:");
+        lblEvaluation.setText("Evaluation:");
 
-        cmbLabel.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Not valid", "Valid", "Relevant" }));
+        cmbTopicalRelevance.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Spam", "Not Relevant", "Relevant", "Very Relevant" }));
 
         cmbIntention.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)", "Support", "Attack" }));
 
@@ -277,6 +283,14 @@ public class AnnotationForm extends javax.swing.JDialog {
             }
         });
 
+        lnlAnnotation.setText("Annotation:");
+
+        lblTopicalRelevance.setText("Topical relevance");
+
+        cmbRhetoricQuality.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Low Quality", "Sufficient", "High Quality" }));
+
+        lblRhetoricQuality.setText("Rhetoric quality");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -293,33 +307,48 @@ public class AnnotationForm extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
                                 .addComponent(btnSave)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnClose))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnClear)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnClaim)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnPremise)
-                                .addGap(30, 30, 30)
-                                .addComponent(lblRelation)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cmbIntention, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 30, Short.MAX_VALUE)
-                                .addComponent(lblLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cmbLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(20, 20, 20))))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(lblEvaluation)
+                                        .addComponent(lnlAnnotation))
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(btnClear)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(btnClaim)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(btnPremise)
+                                            .addGap(30, 30, 30)
+                                            .addComponent(lblRelation)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(cmbIntention, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(cmbTopicalRelevance, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGroup(layout.createSequentialGroup()
+                                                    .addGap(10, 10, 10)
+                                                    .addComponent(lblTopicalRelevance)))
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addGroup(layout.createSequentialGroup()
+                                                    .addGap(18, 18, 18)
+                                                    .addComponent(cmbRhetoricQuality, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGroup(layout.createSequentialGroup()
+                                                    .addGap(32, 32, 32)
+                                                    .addComponent(lblRhetoricQuality))))))))
+                        .addGap(0, 20, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -330,24 +359,32 @@ public class AnnotationForm extends javax.swing.JDialog {
                     .addComponent(cmbType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblDate)
                     .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30)
+                .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblRelation)
                     .addComponent(cmbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cmbSubCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblLabel)
                     .addComponent(cmbIntention, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnClear)
                     .addComponent(btnClaim)
-                    .addComponent(btnPremise))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(btnPremise)
+                    .addComponent(lnlAnnotation))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTopicalRelevance)
+                    .addComponent(lblRhetoricQuality))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbTopicalRelevance, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblEvaluation)
+                    .addComponent(cmbRhetoricQuality, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
                     .addComponent(btnClose))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addGap(20, 20, 20))
         );
 
         pack();
@@ -385,38 +422,6 @@ public class AnnotationForm extends javax.swing.JDialog {
      *
      * @param evt
      */
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        // TODO add your handling code here:
-        if (validation()) {
-            String category = this.cmbCategory.getSelectedItem().toString();
-            String subCategory = this.cmbSubCategory.getSelectedItem().toString();
-            String intent = this.cmbIntention.getSelectedItem().toString();
-            String label = this.cmbLabel.getSelectedItem().toString();
-            saveArgument(argumentId, userId, commentId, parentId, this.sentText, this.sentClaim, this.sentPremise, category, subCategory, intent, label);
-            this.setVisible(false);
-        } else {
-            JOptionPane.showMessageDialog(this, "Error! You must enter all the elements of the argument.", "Error dialog", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_btnSaveActionPerformed
-
-    /**
-     *
-     * @param evt
-     */
-    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        // TODO add your handling code here:
-        this.sentClaim = "";
-        this.sentPremise = "";
-        this.txtMessage.setText(sentText);
-        this.cmbCategory.setSelectedIndex(0);
-        this.cmbIntention.setSelectedIndex(0);
-        this.cmbLabel.setSelectedIndex(0);
-    }//GEN-LAST:event_btnClearActionPerformed
-
-    /**
-     *
-     * @param evt
-     */
     private void btnClaimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClaimActionPerformed
         // TODO add your handling code here:
         this.sentClaim = this.txtMessage.getSelectedText();
@@ -435,6 +440,40 @@ public class AnnotationForm extends javax.swing.JDialog {
 
     /**
      *
+     * @param evt
+     */
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        // TODO add your handling code here:
+        this.sentClaim = "";
+        this.sentPremise = "";
+        this.txtMessage.setText(sentText);
+        this.cmbCategory.setSelectedIndex(0);
+        this.cmbIntention.setSelectedIndex(0);
+        this.cmbTopicalRelevance.setSelectedIndex(0);
+        this.cmbRhetoricQuality.setSelectedIndex(0);
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    /**
+     *
+     * @param evt
+     */
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        // TODO add your handling code here:
+        if (validation()) {
+            String category = this.cmbCategory.getSelectedItem().toString();
+            String subCategory = this.cmbSubCategory.getSelectedItem().toString();
+            String intent = this.cmbIntention.getSelectedItem().toString();
+            String relevance = this.cmbTopicalRelevance.getSelectedItem().toString();
+            String quality = this.cmbRhetoricQuality.getSelectedItem().toString();
+            saveArgument(argumentId, userId, commentId, parentId, this.sentText, this.sentClaim, this.sentPremise, category, subCategory, intent, relevance, quality);
+            this.setVisible(false);
+        } else {
+            JOptionPane.showMessageDialog(this, "Error! You must enter all the elements of the argument.", "Error dialog", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    /**
+     *
      * @param argumentId
      * @param userId
      * @param commentId
@@ -445,9 +484,10 @@ public class AnnotationForm extends javax.swing.JDialog {
      * @param category
      * @param subCategory
      * @param intent
-     * @param label
+     * @param relevance
+     * @param quality
      */
-    private void saveArgument(String argumentId, int userId, int commentId, int parentId, String text, String claim, String premise, String category, String subCategory, String intent, String label) {
+    private void saveArgument(String argumentId, int userId, int commentId, int parentId, String text, String claim, String premise, String category, String subCategory, String intent, String relevance, String quality) {
         Sentence majorClaim = (sentArg != null ? sentArg.getMajorClaim() : new Sentence());
         Sentence sClaim = new Sentence(claim);
         Sentence sPremise = new Sentence(premise);
@@ -460,7 +500,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         System.out.println(">> Save/update argument");
         Argument arg = new Argument(argumentId, userId, commentId, parentId, text, false, sClaim, sPremise, mainVerb, linker, sentPattern, syntacticTree);
         arg.setMajorClaim(majorClaim);
-        this.result = model.saveArgument(arg, label.toUpperCase());
+        this.result = model.saveArgument(arg, relevance, quality);
     }
 
     /**
@@ -483,14 +523,18 @@ public class AnnotationForm extends javax.swing.JDialog {
     private javax.swing.JButton btnSave;
     private javax.swing.JComboBox<String> cmbCategory;
     private javax.swing.JComboBox<String> cmbIntention;
-    private javax.swing.JComboBox<String> cmbLabel;
+    private javax.swing.JComboBox<String> cmbRhetoricQuality;
     private javax.swing.JComboBox<String> cmbSubCategory;
+    private javax.swing.JComboBox<String> cmbTopicalRelevance;
     private javax.swing.JComboBox<String> cmbType;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblDate;
-    private javax.swing.JLabel lblLabel;
+    private javax.swing.JLabel lblEvaluation;
     private javax.swing.JLabel lblRelation;
+    private javax.swing.JLabel lblRhetoricQuality;
+    private javax.swing.JLabel lblTopicalRelevance;
     private javax.swing.JLabel lblType;
+    private javax.swing.JLabel lnlAnnotation;
     private javax.swing.JTextField txtDate;
     private javax.swing.JTextPane txtMessage;
     // End of variables declaration//GEN-END:variables

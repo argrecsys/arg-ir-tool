@@ -33,7 +33,6 @@ import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.utils.FunctionUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +46,7 @@ import java.util.logging.Logger;
 public class DataModel {
 
     // Class constants
-    private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "label", "timestamp"};
+    private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "relevance", "quality", "timestamp"};
     private static final String LABELS_FILEPATH = "../../results/labels.csv";
     private static final int MAX_RECORDS_PER_PAGE = 25;
     private static final int MAX_TREE_LEVEL = 3;
@@ -97,12 +96,11 @@ public class DataModel {
      * @param argumentId
      * @return
      */
-    public String getArgumentLabel(String argumentId) {
-        String label = "";
+    public ArgumentLabel getArgumentLabel(String argumentId) {
         if (proposalLabels.containsKey(argumentId)) {
-            label = proposalLabels.get(argumentId).getLabel();
+            return proposalLabels.get(argumentId);
         }
-        return label;
+        return null;
     }
 
     /**
@@ -228,10 +226,11 @@ public class DataModel {
     /**
      *
      * @param arg
-     * @param label
+     * @param relevance
+     * @param quality
      * @return
      */
-    public boolean saveArgument(Argument arg, String label) {
+    public boolean saveArgument(Argument arg, String relevance, String quality) {
         boolean result = false;
 
         // Insert/update argument
@@ -239,7 +238,7 @@ public class DataModel {
             MongoDbManager mngManager = new MongoDbManager(mdbSetup);
             mngManager.upsertDocument(arg.getDocument(), Filters.eq("argumentID", arg.getId()), new UpdateOptions().upsert(true));
             proposalArguments = mngManager.selectProposalArguments(MAX_TREE_LEVEL);
-            updateModelLabel(arg.getId(), label);
+            updateModelLabel(arg.getId(), relevance, quality);
             result = true;
             FunctionUtils.printWithDatestamp(" - Upserted argument: " + arg.getId());
         }
@@ -260,14 +259,15 @@ public class DataModel {
     /**
      *
      * @param argumentId
-     * @param value
+     * @param relevance
+     * @param quality
      */
-    public void updateModelLabel(String argumentId, String value) {
+    public void updateModelLabel(String argumentId, String relevance, String quality) {
         String timeStamp = DateTimeFormatter.ofPattern(dateFormat).format(LocalDateTime.now());
-        ArgumentLabel label = new ArgumentLabel(argumentId, value, timeStamp);
+        ArgumentLabel label = new ArgumentLabel(argumentId, relevance, quality, timeStamp);
         proposalLabels.put(argumentId, label);
         isDirty = true;
-        FunctionUtils.printWithDatestamp(" - Argument '" + argumentId + "' has been annotated as " + value);
+        FunctionUtils.printWithDatestamp(" - Argument '" + argumentId + "' has been annotated as '" + relevance + "' and '" + quality + "'");
     }
 
     /**
@@ -295,8 +295,8 @@ public class DataModel {
     }
 
     /**
-     * Logarithm of the weighted sum of the quality and quantity of arguments in
-     * a document.
+     * Logarithm of the weighted sum of the topical relevance of arguments in a
+     * document.
      *
      * @param id
      * @return
@@ -311,13 +311,19 @@ public class DataModel {
             double score = 0.0;
 
             for (Argument arg : args) {
-                String label = getArgumentLabel(arg.getId()).toUpperCase();
-                if (label.equals("RELEVANT")) {
+                ArgumentLabel label = getArgumentLabel(arg.getId());
+                String relevance = label.getRelevance().toUpperCase();
+
+                if (relevance.equals("VERY_RELEVANT")) {
+                    score += 3.0;
+                } else if (relevance.equals("RELEVANT")) {
                     score += 2.0;
-                } else if (label.equals("VALID")) {
+                } else if (relevance.equals("NOT_RELEVANT")) {
                     score += 1.0;
-                } else if (label.equals("")) {
+                } else if (relevance.equals("")) {
                     score += 0.5;
+                } else if (relevance.equals("SPAM")) {
+                    score += -2;
                 }
             }
 
@@ -406,11 +412,11 @@ public class DataModel {
     /**
      * Information retrieval and Argument-based re-ranking modules. Retrieves
      * documents from the index and uses a cache to optimize queries.
-     * 
+     *
      * @param query
      * @param reRankBy
      * @param similarity
-     * @return 
+     * @return
      */
     private List<Integer> retrieveInformation(String query, String reRankBy, String similarity) {
         List<Integer> docList;

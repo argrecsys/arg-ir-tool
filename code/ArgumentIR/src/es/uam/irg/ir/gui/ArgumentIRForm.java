@@ -18,7 +18,6 @@
 package es.uam.irg.ir.gui;
 
 import es.uam.irg.utils.FunctionUtils;
-import java.awt.Color;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -29,11 +28,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.html.HTMLDocument;
 
 /**
  * Argument IR form class.
@@ -106,39 +100,6 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         }
 
         return header;
-    }
-
-    /**
-     *
-     * @param doc
-     * @param el
-     * @param color
-     */
-    private void changeColor(HTMLDocument doc, Element el, Color color) {
-        int start = el.getStartOffset();
-        int end = el.getEndOffset();
-        StyleContext ss = doc.getStyleSheet();
-        Style style = ss.addStyle("HighlightedHyperlink", null);
-        style.addAttribute(StyleConstants.Foreground, color);
-        doc.setCharacterAttributes(start, end - start, style, false);
-    }
-
-    /**
-     *
-     * @param argumentId
-     * @param target
-     * @throws BadLocationException
-     */
-    private void highlightElements(String argumentId, Element target) throws BadLocationException {
-        HTMLDocument html = (HTMLDocument) txtResult.getDocument();
-        String[] options = {"relevant", "valid", "not-valid"};
-
-        for (String tag : options) {
-            String elemId = argumentId + "-" + tag;
-            Element elem = html.getElement(elemId);
-            Color linkColor = (elem.equals(target) ? ReportFormatter.HIGHLIGHT_COLOR_CURRENT : ReportFormatter.HIGHLIGHT_COLOR_DEFAULT);
-            changeColor(html, elem, linkColor);
-        }
     }
 
     /**
@@ -404,15 +365,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     String[] tokens = evtValue.replace(ReportFormatter.APP_URL, "").split("/");
                     String action = tokens[0];
 
-                    if (action.equals(ReportFormatter.MODE_VALIDATE)) {
-                        String argumentId = tokens[1];
-                        String value = tokens[2];
-                        System.out.println(" - Action: " + action + ", argumentId: " + argumentId + ", value: " + value);
-
-                        model.updateModelLabel(argumentId, value);
-                        highlightElements(argumentId, evt.getSourceElement());
-
-                    } else if (action.equals(ReportFormatter.MODE_ANNOTATE)) {
+                    if (action.equals(ReportFormatter.MODE_ANNOTATE)) {
                         String mode = tokens[1];
                         int id = Integer.parseInt(tokens[2]);
                         System.out.println(" - Action: " + action + ", mode: " + mode + ", id: " + id);
@@ -438,7 +391,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     }
                 }
 
-            } catch (URISyntaxException | IOException | BadLocationException ex) {
+            } catch (URISyntaxException | IOException ex) {
                 Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

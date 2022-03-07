@@ -25,7 +25,6 @@ import es.uam.irg.io.IOManager;
 import es.uam.irg.nlp.am.arguments.Argument;
 import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.nlp.am.arguments.Sentence;
-import es.uam.irg.utils.FunctionUtils;
 import java.awt.Color;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -43,7 +42,6 @@ public class ReportFormatter {
     public static final Color HIGHLIGHT_COLOR_CURRENT = new Color(0, 100, 0);
     public static final Color HIGHLIGHT_COLOR_DEFAULT = Color.BLUE;
     public static final String MODE_ANNOTATE = "ANNOTATE";
-    public static final String MODE_VALIDATE = "VALIDATE";
     private static final String REPORTS_PATH = "Resources/views/";
 
     private final DecimalFormat df;
@@ -117,7 +115,6 @@ public class ReportFormatter {
             int leftPadding = tree.getLevel() * 15;
             DMComment currNode = comments.get(nodeId);
             Argument arg = getArgumentByComment(currNode, arguments);
-            String argLabel = getArgumentLabel(arg, labels);
             String btAnnotate = getAnnotationButton("COMMENT", nodeId);
 
             report = report.replace("PADDING-LEFTpx", (leftPadding + "px"));
@@ -126,7 +123,7 @@ public class ReportFormatter {
             report = report.replace("$VOTES$", "" + currNode.getNumVotes());
             report = report.replace("$NUM_POSITIVE$", "" + currNode.getNumVotesUp());
             report = report.replace("$NUM_NEGATIVE$", "" + currNode.getNumVotesDown());
-            report = report.replace("$TEXT$", btAnnotate + " " + highlightArgument(currNode.getText(), arg, argLabel));
+            report = report.replace("$TEXT$", btAnnotate + " " + highlightArgument(currNode.getText(), arg));
 
             for (DMCommentTree node : tree.getChildren()) {
                 report += getCommentsInfoReport(node, comments, arguments, labels);
@@ -162,7 +159,6 @@ public class ReportFormatter {
         String report = reports.get("PROPOSAL_INFO");
         StringBuilder body = new StringBuilder();
         Argument arg = getArgumentByProposal(proposal, arguments);
-        String argLabel = getArgumentLabel(arg, labels);
         String btAnnotate = getAnnotationButton("PROPOSAL", proposal.getId());
 
         // Create main report
@@ -178,7 +174,7 @@ public class ReportFormatter {
         report = report.replace("$DISTRICTS$", summary.getDistricts());
         report = report.replace("$TOPICS$", summary.getTopics());
         report = report.replace("$URL$", proposal.getUrl());
-        report = report.replace("$SUMMARY$", btAnnotate + " " + highlightArgument(proposal.getSummary(), arg, argLabel));
+        report = report.replace("$SUMMARY$", btAnnotate + " " + highlightArgument(proposal.getSummary(), arg));
 
         // Add comments
         if (commentTrees != null) {
@@ -250,21 +246,6 @@ public class ReportFormatter {
 
     /**
      *
-     * @param arg
-     * @param labels
-     * @return
-     */
-    private String getArgumentLabel(Argument arg, Map<String, ArgumentLabel> labels) {
-        String value = "";
-        if (arg != null && labels.containsKey(arg.getId())) {
-            ArgumentLabel label = labels.get(arg.getId());
-            value = label.getLabel();
-        }
-        return value;
-    }
-
-    /**
-     *
      * @param sent
      * @return
      */
@@ -281,32 +262,11 @@ public class ReportFormatter {
 
     /**
      *
-     * @param id
-     * @return
-     */
-    private String getValidationPanel(String id, String label) {
-        String report = reports.get("VALIDATE_ARGUMENT");
-        report = report.replace("ARG_ID", id);
-        report = report.replace("$ARG_LINK$", APP_URL + MODE_VALIDATE + "/" + id);
-
-        String[] options = {"RELEVANT", "NOT_VALID", "VALID"};
-        for (String opt : options) {
-            String tag = opt + "_LINK_COLOR";
-            Color color = (opt.equals(label) ? HIGHLIGHT_COLOR_CURRENT : HIGHLIGHT_COLOR_DEFAULT);
-            String hex = FunctionUtils.colorToHex(color);
-            report = report.replace(tag, hex);
-        }
-
-        return report;
-    }
-
-    /**
-     *
      * @param text
      * @param argument
      * @return
      */
-    private String highlightArgument(String text, Argument arg, String label) {
+    private String highlightArgument(String text, Argument arg) {
         String newText = text;
 
         if (arg != null) {
@@ -315,10 +275,9 @@ public class ReportFormatter {
             String hlClaim = highlightClaim(claim);
             String hlPremise = highlightPremise(premise);
             String hlConnector = highlightLinker(arg.linker.getText());
-            String hlValidation = getValidationPanel(arg.getId(), label);
 
             newText = newText.replace(arg.claim.getText(), hlClaim);
-            newText = newText.replace(arg.premise.getText(), hlPremise + " " + hlConnector + " " + hlValidation);
+            newText = newText.replace(arg.premise.getText(), hlPremise + " " + hlConnector);
         }
 
         return newText;

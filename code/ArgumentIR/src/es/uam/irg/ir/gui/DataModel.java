@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,7 +48,7 @@ public class DataModel {
 
     // Class constants
     private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "relevance", "quality", "timestamp"};
-    private static final String LABELS_FILEPATH = "../../results/labels.csv";
+    private static final String LABELS_FILEPATH = "../../data/results/labels.csv";
     private static final int MAX_RECORDS_PER_PAGE = 25;
     private static final int MAX_TREE_LEVEL = 3;
 
@@ -346,15 +347,18 @@ public class DataModel {
 
     /**
      *
-     * @param id
+     * @param proposalIds
+     * @param controversyScores
      * @return
      */
-    private Map<Integer, Double> getControversyScores(Map<Integer, ControversyScore> controversyScores) {
+    private Map<Integer, Double> getControversyScores(Set<Integer> proposalIds, Map<Integer, ControversyScore> controversyScores) {
         Map<Integer, Double> scores = new HashMap<>();
 
         controversyScores.keySet().forEach(docId -> {
-            double score = controversyScores.get(docId).getValue();
-            scores.put(docId, score);
+            if (proposalIds.contains(docId)) {
+                double score = controversyScores.get(docId).getValue();
+                scores.put(docId, score);
+            }
         });
 
         return scores;
@@ -394,7 +398,7 @@ public class DataModel {
             FunctionUtils.printWithDatestamp(" - Number of arguments: " + proposalArguments.size());
 
             // Get proposal controversy scores
-            controversyScores = getControversyScores(dbManager.selectProposalControversy());
+            controversyScores = getControversyScores(proposals.keySet(), dbManager.selectProposalControversy());
             FunctionUtils.printWithDatestamp(" - Number of controversy scores: " + controversyScores.size());
 
         } catch (Exception ex) {

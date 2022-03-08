@@ -54,7 +54,7 @@ import org.apache.lucene.store.Directory;
  */
 public class InfoRetriever {
 
-    public static final double LAMBDA = 0.60;
+    public static final double LAMBDA = 0.65;
 
     // The same analyzer should be used for indexing and searching
     private final StandardAnalyzer analyzer;
@@ -143,7 +143,7 @@ public class InfoRetriever {
             // Search within the index
             try ( IndexReader reader = DirectoryReader.open(index)) {
                 IndexSearcher searcher = new IndexSearcher(reader);
-                searcher.setSimilarity(getSimilarity(similarity));
+                searcher.setSimilarity(getSimilarityFunction(similarity));
                 TopDocs docs = searcher.search(q, Integer.MAX_VALUE);
                 ScoreDoc[] hits = docs.scoreDocs;
 
@@ -213,7 +213,7 @@ public class InfoRetriever {
      * @param similarity
      * @return
      */
-    private Similarity getSimilarity(String similarity) {
+    private Similarity getSimilarityFunction(String similarity) {
         Similarity metric = null;
         similarity = similarity.toUpperCase();
 

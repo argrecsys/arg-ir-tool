@@ -54,7 +54,7 @@ import org.apache.lucene.store.Directory;
  */
 public class InfoRetriever {
 
-    public static final double LAMBDA = 0.60;
+    public static final double LAMBDA = 0.65;
 
     // The same analyzer should be used for indexing and searching
     private final StandardAnalyzer analyzer;

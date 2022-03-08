@@ -80,7 +80,7 @@ public class DMDBManager {
     public Map<Integer, DMComment> selectComments() throws Exception {
         Map<Integer, DMComment> comments = new HashMap<>();
 
-        String query = "SELECT * FROM proposal_comments;";
+        String query = "SELECT * FROM proposal_comments_2_processed;";
         ResultSet rs = this.db.executeSelect(query);
 
         while (rs != null && rs.next()) {
@@ -106,7 +106,7 @@ public class DMDBManager {
     public Map<Integer, List<DMComment>> selectProposalComments() throws Exception {
         Map<Integer, List<DMComment>> comments = new HashMap<>();
 
-        String query = "SELECT * FROM proposal_comments;";
+        String query = "SELECT * FROM proposal_comments_2_processed;";
         ResultSet rs = this.db.executeSelect(query);
 
         while (rs != null && rs.next()) {
@@ -155,7 +155,7 @@ public class DMDBManager {
     public Map<Integer, DMProposal> selectProposals() throws Exception {
         Map<Integer, DMProposal> proposals = new HashMap<>();
 
-        String query = "SELECT * FROM proposals;";
+        String query = "SELECT * FROM proposals_2_processed;";
         ResultSet rs = this.db.executeSelect(query);
 
         while (rs != null && rs.next()) {
@@ -185,7 +185,7 @@ public class DMDBManager {
                 + "       IFNULL(GROUP_CONCAT(DISTINCT pc.category), '') AS categories, "
                 + "       IFNULL(GROUP_CONCAT(DISTINCT pd.district), '') AS districts, "
                 + "       IFNULL(GROUP_CONCAT(DISTINCT pt.topic), '') AS topic "
-                + "  FROM proposals AS p "
+                + "  FROM proposals_2_processed AS p "
                 + "  LEFT OUTER JOIN "
                 + "       proposal_categories AS pc ON p.id = pc.id "
                 + "  LEFT OUTER JOIN "

@@ -74,20 +74,18 @@
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="cmbTopicalRelevance" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
-                                                  <Component id="lblTopicalRelevance" min="-2" max="-2" attributes="0"/>
-                                              </Group>
+                                              <Component id="cmbTopicalRelevance" min="-2" max="-2" attributes="0"/>
+                                              <Component id="lblTopicalRelevance" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                               <Group type="102" attributes="0">
                                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                                   <Component id="cmbRhetoricQuality" min="-2" pref="100" max="-2" attributes="0"/>
                                               </Group>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+                                              <Group type="102" alignment="1" attributes="0">
+                                                  <EmptySpace max="32767" attributes="0"/>
                                                   <Component id="lblRhetoricQuality" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
                                       </Group>
@@ -99,6 +97,15 @@
                       <EmptySpace min="0" pref="20" max="32767" attributes="0"/>
                   </Group>
               </Group>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="32767" attributes="0"/>
+              <Component id="lblCategory" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
+              <Component id="lblSubCategory" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
+              <Component id="lblIntention" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="59" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -112,7 +119,13 @@
                   <Component id="lblDate" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtDate" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="lblCategory" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblSubCategory" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblIntention" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblRelation" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cmbCategory" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -330,6 +343,21 @@
     <Component class="javax.swing.JLabel" name="lblRhetoricQuality">
       <Properties>
         <Property name="text" type="java.lang.String" value="Rhetoric quality"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblCategory">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Category"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblSubCategory">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Sub-Category"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblIntention">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Intent"/>
       </Properties>
     </Component>
   </SubComponents>

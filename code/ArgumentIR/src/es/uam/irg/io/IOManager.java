@@ -31,8 +31,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,6 +44,33 @@ import org.yaml.snakeyaml.Yaml;
  * Input-output manager class.
  */
 public class IOManager {
+
+    /**
+     *
+     * @param filepath
+     * @return
+     */
+    public static List<String> readAnnotators(String filepath) {
+        List<String> annotators = new ArrayList<>();
+
+        try {
+            File txtFile = new File(filepath);
+
+            if (txtFile.exists() && txtFile.isFile()) {
+                try ( BufferedReader reader = new BufferedReader(new FileReader(txtFile))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        annotators.add(line.trim());
+                    }
+                }
+            }
+
+        } catch (IOException ex) {
+            Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return annotators;
+    }
 
     /**
      *
@@ -67,7 +96,7 @@ public class IOManager {
                     while ((row = reader.readLine()) != null) {
                         String[] data = row.split(",");
 
-                        if (data.length == 5) {
+                        if (data.length == 6) {
                             id = data[1];
                             relevance = data[2];
                             quality = data[3];
@@ -140,10 +169,11 @@ public class IOManager {
      * @param filepath
      * @param header
      * @param csvData
+     * @param userName
      * @param sorted
      * @return
      */
-    public static boolean saveDictToCsvFile(String filepath, String[] header, Map<String, ArgumentLabel> csvData, boolean sorted) {
+    public static boolean saveDictToCsvFile(String filepath, String[] header, Map<String, ArgumentLabel> csvData, String userName, boolean sorted) {
         boolean result = false;
 
         if (csvData.size() > 0) {
@@ -159,7 +189,10 @@ public class IOManager {
 
             csvData.entrySet().forEach(entry -> {
                 ArgumentLabel label = entry.getValue();
-                sb.append(label.toString()).append("\n");
+                sb.append(label.toString())
+                        .append(",")
+                        .append(userName)
+                        .append("\n");
             });
 
             // Save data

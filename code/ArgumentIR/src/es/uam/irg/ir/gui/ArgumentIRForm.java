@@ -17,11 +17,13 @@
  */
 package es.uam.irg.ir.gui;
 
+import es.uam.irg.io.IOManager;
 import es.uam.irg.utils.FunctionUtils;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -38,9 +40,11 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     public static final String HTML_CONTENT_TYPE = "text/html";
     public static final String DECIMAL_FORMAT = "0.000";
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String USERS_FILEPATH = "Resources/config/annotators.txt";
 
     private boolean doEvents;
     private final DataModel model;
+    private final String userName;
 
     /**
      * Creates new form ArgumentIRForm
@@ -50,6 +54,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         this.doEvents = false;
         this.model = new DataModel(DECIMAL_FORMAT, DATE_FORMAT);
         this.setVisible(true);
+        this.userName = getAnnotatorName();
+        this.lblAnnotator.setText("Annotator: " + userName);
     }
 
     /**
@@ -58,7 +64,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private void closeForm() {
         if (model.isDirty()) {
             if (JOptionPane.showConfirmDialog(this, "Arguments have been annotated. Do you want to save the new labels?", "Confirm Dialog", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                model.saveLabelsToFile();
+                model.saveLabelsToFile(userName);
             }
         }
         this.setVisible(false);
@@ -80,6 +86,31 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         } catch (BadLocationException ex) {
             Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     *
+     * @return
+     */
+    private String[] getAnnotatorList() {
+        List<String> annotators = IOManager.readAnnotators(USERS_FILEPATH);
+        return annotators.toArray(new String[0]);
+    }
+
+    /**
+     *
+     * @return
+     */
+    private String getAnnotatorName() {
+        String userName = "admin";
+        String[] annotators = getAnnotatorList();
+        String result = (String) JOptionPane.showInputDialog(this, "Please, enter annotator name:", "Annotator Name", JOptionPane.PLAIN_MESSAGE, null, annotators, "");
+
+        if (result != null && result.length() > 0) {
+            userName = result;
+        }
+
+        return userName;
     }
 
     /**
@@ -124,6 +155,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         lblOfN = new javax.swing.JLabel();
         lblSimilarity = new javax.swing.JLabel();
         cmbSimilarity = new javax.swing.JComboBox<>();
+        lblAnnotator = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
         mItemExportHtml = new javax.swing.JMenuItem();
@@ -185,6 +217,9 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         lblSimilarity.setText("Similarity:");
 
         cmbSimilarity.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "BM25", "Cosine", "Dirichlet" }));
+
+        lblAnnotator.setText("Annotator: ");
+        lblAnnotator.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 
         menuFile.setText("File");
 
@@ -262,17 +297,16 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                         .addComponent(cmbPage, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lblOfN)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblAnnotator))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblQuery)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtQuery, javax.swing.GroupLayout.DEFAULT_SIZE, 1051, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnSearch))
-                            .addComponent(scrollPane))
-                        .addGap(20, 20, 20))))
+                        .addComponent(lblQuery)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtQuery, javax.swing.GroupLayout.DEFAULT_SIZE, 1051, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnSearch))
+                    .addComponent(scrollPane))
+                .addGap(20, 20, 20))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -290,7 +324,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                     .addComponent(cmbReranks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblOfN)
                     .addComponent(lblSimilarity)
-                    .addComponent(cmbSimilarity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbSimilarity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblAnnotator))
                 .addGap(20, 20, 20)
                 .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
                 .addGap(20, 20, 20))
@@ -405,7 +440,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private void mItemSaveLabelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mItemSaveLabelsActionPerformed
         // TODO add your handling code here:
         if (model.isDirty()) {
-            model.saveLabelsToFile();
+            model.saveLabelsToFile(userName);
         }
     }//GEN-LAST:event_mItemSaveLabelsActionPerformed
 
@@ -488,6 +523,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> cmbReranks;
     private javax.swing.JComboBox<String> cmbSimilarity;
     private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JLabel lblAnnotator;
     private javax.swing.JLabel lblOfN;
     private javax.swing.JLabel lblPage;
     private javax.swing.JLabel lblQuery;

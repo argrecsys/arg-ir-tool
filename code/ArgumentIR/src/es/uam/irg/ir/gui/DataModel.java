@@ -47,9 +47,9 @@ import java.util.logging.Logger;
 public class DataModel {
 
     // Class constants
-    private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "relevance", "quality", "timestamp"};
+    private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "relevance", "quality", "timestamp", "username"};
     private static final String LABELS_FILEPATH = "../../data/results/labels.csv";
-    private static final int MAX_RECORDS_PER_PAGE = 25;
+    private static final int MAX_RECORDS_PER_PAGE = 10;
     private static final int MAX_TREE_LEVEL = 3;
 
     // Class objects
@@ -251,8 +251,8 @@ public class DataModel {
      *
      * @return
      */
-    public boolean saveLabelsToFile() {
-        boolean result = IOManager.saveDictToCsvFile(LABELS_FILEPATH, CSV_FILE_HEADER, proposalLabels, true);
+    public boolean saveLabelsToFile(String userName) {
+        boolean result = IOManager.saveDictToCsvFile(LABELS_FILEPATH, CSV_FILE_HEADER, proposalLabels, userName, true);
         isDirty = !result;
         return result;
     }

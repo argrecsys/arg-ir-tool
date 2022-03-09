@@ -5,7 +5,6 @@
 *.class
 *.log
 *.ctxt
-*.jar
 *.war
 *.nar
 *.ear
@@ -13,6 +12,7 @@
 *.tar.gz
 *.rar
 hs_err_pid*
+code/ArgumentIR/store/ArgumentIR.jar
 
 ##############################
 ## NetBeans

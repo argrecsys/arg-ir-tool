@@ -202,9 +202,9 @@ public class InfoRetriever {
         doc.add(new TextField("code", "" + code, Field.Store.YES));
         doc.add(new TextField("title", title, Field.Store.YES));
         doc.add(new TextField("summary", summary, Field.Store.YES));
-        doc.add(new TextField("categories", categories, Field.Store.YES));
-        doc.add(new TextField("districts", districts, Field.Store.YES));
-        doc.add(new TextField("topics", topics, Field.Store.YES));
+        doc.add(new TextField("categories", categories.replace(",", " "), Field.Store.YES));
+        doc.add(new TextField("districts", districts.replace(",", " "), Field.Store.YES));
+        doc.add(new TextField("topics", topics.replace(",", " "), Field.Store.YES));
         iw.addDocument(doc);
     }
 

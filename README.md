@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
-![version](https://img.shields.io/badge/version-0.9.14-blue)
-![last-update](https://img.shields.io/badge/last_update-3/8/2022-orange)
+![version](https://img.shields.io/badge/version-0.9.16-blue)
+![last-update](https://img.shields.io/badge/last_update-3/9/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 Argument-enhanced information retrieval project repository. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
@@ -17,6 +17,17 @@ Argument-enhanced Information Retrieval Tool:
 Arguments Annotation Form:
 
 ![arg-ir-gui-annotation](https://raw.githubusercontent.com/argrecsys/arg-enhanced-ir/main/images/gui-annotation.gif)
+
+## Annotation and validation
+The tool allows you to annotate/edit arguments, as well as validate their relevance and quality.
+Below is an example of the generated <a href="https://github.com/argrecsys/arg-enhanced-ir/blob/main/data/results/labels.csv" target="_blank">validation file</a>.
+
+| proposal_id | argument_id | relevance | quality | timestamp | username |
+| ----------- | ----------- | --------- | ------- | --------- | -------- |
+| 1419 | 1419-30381-1-1 | RELEVANT | SUFFICIENT | 17/02/2022 23:04 | andres.segura |
+| 2576 | 2576-0-1-1 | VERY_RELEVANT | HIGH_QUALITY | 16/02/2022 17:31 | andres.segura |
+| 10996 | 10996-0-1-1 | VERY_RELEVANT | HIGH_QUALITY | 24/02/2022 20:12 | andres.segura |
+| 26787 | 26787-204339-1-1 | NOT_RELEVANT | LOW_QUALITY | 2022-03-09 16:39:43 | andres.segura |
 
 ## Dependencies
 The implemented solutions depend on or make use of the following libraries and .jar files:

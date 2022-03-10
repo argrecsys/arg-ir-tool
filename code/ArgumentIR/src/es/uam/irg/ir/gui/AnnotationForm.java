@@ -25,6 +25,7 @@ import es.uam.irg.nlp.am.arguments.ArgumentLinker;
 import es.uam.irg.nlp.am.arguments.ArgumentPattern;
 import es.uam.irg.nlp.am.arguments.Sentence;
 import es.uam.irg.utils.StringUtils;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
@@ -54,7 +55,7 @@ public class AnnotationForm extends javax.swing.JDialog {
     public AnnotationForm(DataModel model) {
         initComponents();
         this.model = model;
-        this.taxonomy = model.getArgumentTaxonomy();
+        this.taxonomy = model.getRelationTaxonomy();
         this.commentId = 0;
         this.userId = 0;
         this.parentId = 0;
@@ -63,6 +64,7 @@ public class AnnotationForm extends javax.swing.JDialog {
         this.sentText = "";
         this.sentClaim = "";
         this.sentPremise = "";
+        loadCategoriesModel();
         this.result = false;
     }
 
@@ -259,7 +261,7 @@ public class AnnotationForm extends javax.swing.JDialog {
 
         lblRelation.setText("Relation:");
 
-        cmbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)", "Cause", "Clarification", "Consequence", "Contrast", "Elaboration" }));
+        cmbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)" }));
         cmbCategory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbCategoryActionPerformed(evt);
@@ -501,6 +503,17 @@ public class AnnotationForm extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this, "Error! You must enter all the elements of the argument.", "Error dialog", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnSaveActionPerformed
+
+    /**
+     *
+     */
+    private void loadCategoriesModel() {
+        List<String> categories = new ArrayList<>(this.taxonomy.keySet());
+        java.util.Collections.sort(categories);
+        categories.forEach(item -> {
+            this.cmbCategory.addItem(item);
+        });
+    }
 
     /**
      *

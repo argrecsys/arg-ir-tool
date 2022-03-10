@@ -19,6 +19,7 @@ package es.uam.irg.io;
 
 import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.utils.FunctionUtils;
+import es.uam.irg.utils.StringUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,6 +45,9 @@ import org.yaml.snakeyaml.Yaml;
  * Input-output manager class.
  */
 public class IOManager {
+
+    // Class constants
+    private static final String LEXICON_FILEPATH = "Resources/data/argument_lexicon_{}.csv";
 
     /**
      *
@@ -136,6 +140,52 @@ public class IOManager {
         }
 
         return reports;
+    }
+
+    /**
+     *
+     * @param lang
+     * @return
+     */
+    public static Map<String, List<String>> readRelationTaxonomy(String lang) {
+        Map<String, List<String>> taxonomy = new HashMap<>();
+        String taxonomyFilepath = LEXICON_FILEPATH.replace("{}", lang);
+
+        try {
+            // Get the file
+            File csvFile = new File(taxonomyFilepath);
+
+            // Check if the specified file exists or not
+            if (csvFile.exists()) {
+                try ( BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
+                    String row;
+                    String category;
+                    String subCategory;
+
+                    reader.readLine();
+                    while ((row = reader.readLine()) != null) {
+                        String[] data = row.split(",");
+
+                        if (data.length == 6) {
+                            category = StringUtils.toTitleCase(data[2]);
+                            subCategory = StringUtils.toTitleCase(data[3]);
+
+                            if (!taxonomy.containsKey(category)) {
+                                taxonomy.put(category, new ArrayList<>());
+                            }
+                            if (!taxonomy.get(category).contains(subCategory)) {
+                                taxonomy.get(category).add(subCategory);
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (IOException ex) {
+            Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return taxonomy;
     }
 
     /**

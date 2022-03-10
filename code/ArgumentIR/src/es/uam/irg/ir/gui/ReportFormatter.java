@@ -114,6 +114,7 @@ public class ReportFormatter {
             int nodeId = tree.getId();
             int leftPadding = tree.getLevel() * 15;
             DMComment currNode = comments.get(nodeId);
+            String commentBody = currNode.getText();
             Argument arg = getArgumentByComment(currNode, arguments);
             String btAnnotate = getAnnotationButton("COMMENT", nodeId);
 
@@ -123,7 +124,7 @@ public class ReportFormatter {
             report = report.replace("$VOTES$", "" + currNode.getNumVotes());
             report = report.replace("$NUM_POSITIVE$", "" + currNode.getNumVotesUp());
             report = report.replace("$NUM_NEGATIVE$", "" + currNode.getNumVotesDown());
-            report = report.replace("$TEXT$", btAnnotate + " " + highlightArgument(currNode.getText(), arg));
+            report = report.replace("$TEXT$", btAnnotate + " " + highlightArgument(commentBody, arg));
 
             for (DMCommentTree node : tree.getChildren()) {
                 report += getCommentsInfoReport(node, comments, arguments, labels);

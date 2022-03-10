@@ -33,7 +33,6 @@ import es.uam.irg.nlp.am.arguments.ArgumentLabel;
 import es.uam.irg.utils.FunctionUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,7 @@ public class DataModel {
     // Class constants
     private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "relevance", "quality", "timestamp", "username"};
     private static final String LABELS_FILEPATH = "../../data/results/labels.csv";
+    private static final String LANG = "es";
     private static final int MAX_RECORDS_PER_PAGE = 10;
     private static final int MAX_TREE_LEVEL = 3;
 
@@ -70,6 +70,7 @@ public class DataModel {
     private Map<Integer, DMProposalSummary> proposalSummaries;
     private Map<Integer, DMProposal> proposals;
     private InfoRetriever retriever;
+    private Map<String, List<String>> taxonomy;
 
     /**
      * Constructor.
@@ -88,6 +89,7 @@ public class DataModel {
 
         // Data loading and IR index creation
         loadData();
+        loadRelationTaxonomy();
         createDocumentIndex();
         loadLabels();
     }
@@ -102,21 +104,6 @@ public class DataModel {
             return proposalLabels.get(argumentId);
         }
         return null;
-    }
-
-    /**
-     * Returns argument relation taxonomy.
-     *
-     * @return
-     */
-    public Map<String, List<String>> getArgumentTaxonomy() {
-        Map<String, List<String>> taxonomy = new HashMap<>();
-        taxonomy.put("Cause", Arrays.asList(new String[]{"Condition", "Reason"}));
-        taxonomy.put("Clarification", Arrays.asList(new String[]{"Conclusion", "Exemplification", "Restatement", "Summary"}));
-        taxonomy.put("Consequence", Arrays.asList(new String[]{"Explanation", "Goal", "Result"}));
-        taxonomy.put("Contrast", Arrays.asList(new String[]{"Alternative", "Comparison", "Concession", "Opposition"}));
-        taxonomy.put("Elaboration", Arrays.asList(new String[]{"Addition", "Precision", "Similarity"}));
-        return taxonomy;
     }
 
     /**
@@ -181,7 +168,7 @@ public class DataModel {
         } else {
             // Elapsed time variables
             long start, finish;
-            int timeElapsed1 = 0, timeElapsed2 = 0;
+            int timeElapsed1, timeElapsed2;
 
             // 1. Data querying, reranking and pagination
             start = System.nanoTime();
@@ -217,6 +204,15 @@ public class DataModel {
     }
 
     /**
+     * Returns argument relation taxonomy.
+     *
+     * @return
+     */
+    public Map<String, List<String>> getRelationTaxonomy() {
+        return taxonomy;
+    }
+
+    /**
      *
      * @return
      */
@@ -249,6 +245,7 @@ public class DataModel {
 
     /**
      *
+     * @param userName
      * @return
      */
     public boolean saveLabelsToFile(String userName) {
@@ -402,8 +399,7 @@ public class DataModel {
             FunctionUtils.printWithDatestamp(" - Number of controversy scores: " + controversyScores.size());
 
         } catch (Exception ex) {
-            Logger.getLogger(InfoRetriever.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -414,6 +410,24 @@ public class DataModel {
         FunctionUtils.printWithDatestamp(">> Loading argument labels");
         proposalLabels = IOManager.readDictFromCsvFile(LABELS_FILEPATH);
         FunctionUtils.printWithDatestamp(" - Number of argument labels: " + proposalLabels.size());
+    }
+
+    /**
+     *
+     */
+    private void loadRelationTaxonomy() {
+        this.taxonomy = IOManager.readRelationTaxonomy(LANG);
+
+        System.out.println(">> Taxonomy:");
+        for (String category : taxonomy.keySet()) {
+            System.out.println(" - " + category);
+            List<String> subCategories = taxonomy.get(category);
+            java.util.Collections.sort(subCategories);
+            subCategories.forEach(subCategory -> {
+                System.out.println("\t" + subCategory);
+            });
+        }
+
     }
 
     /**

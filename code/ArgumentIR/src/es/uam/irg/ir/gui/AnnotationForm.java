@@ -274,7 +274,7 @@ public class AnnotationForm extends javax.swing.JDialog {
 
         cmbTopicalRelevance.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Spam", "Not Relevant", "Relevant", "Very Relevant" }));
 
-        cmbIntention.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)", "Support", "Attack" }));
+        cmbIntention.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "(None)", "Support", "Attack", "Qualifier" }));
 
         btnClear.setText("Clear");
         btnClear.addActionListener(new java.awt.event.ActionListener() {

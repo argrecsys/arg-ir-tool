@@ -392,7 +392,7 @@ public class DataModel {
 
             // Get arguments data
             proposalArguments = mngManager.selectProposalArguments(MAX_TREE_LEVEL);
-            FunctionUtils.printWithDatestamp(" - Number of arguments: " + proposalArguments.size());
+            FunctionUtils.printWithDatestamp(" - Number of proposals with arguments: " + proposalArguments.size());
 
             // Get proposal controversy scores
             controversyScores = getControversyScores(proposals.keySet(), dbManager.selectProposalControversy());

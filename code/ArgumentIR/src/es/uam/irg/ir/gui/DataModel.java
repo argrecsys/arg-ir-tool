@@ -88,8 +88,8 @@ public class DataModel {
         this.nRows = 0;
 
         // Data loading and IR index creation
-        loadRelationTaxonomy();
         loadData();
+        loadRelationTaxonomy();
         createDocumentIndex();
         loadLabels();
     }
@@ -168,7 +168,7 @@ public class DataModel {
         } else {
             // Elapsed time variables
             long start, finish;
-            int timeElapsed1 = 0, timeElapsed2 = 0;
+            int timeElapsed1, timeElapsed2;
 
             // 1. Data querying, reranking and pagination
             start = System.nanoTime();
@@ -245,6 +245,7 @@ public class DataModel {
 
     /**
      *
+     * @param userName
      * @return
      */
     public boolean saveLabelsToFile(String userName) {
@@ -398,8 +399,7 @@ public class DataModel {
             FunctionUtils.printWithDatestamp(" - Number of controversy scores: " + controversyScores.size());
 
         } catch (Exception ex) {
-            Logger.getLogger(InfoRetriever.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(InfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

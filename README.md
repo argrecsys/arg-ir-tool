@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
-![version](https://img.shields.io/badge/version-0.9.18-blue)
-![last-update](https://img.shields.io/badge/last_update-3/10/2022-orange)
+![version](https://img.shields.io/badge/version-1.0.0-blue)
+![last-update](https://img.shields.io/badge/last_update-3/11/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 Argument-enhanced information retrieval project repository. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
@@ -10,11 +10,11 @@ We present a tool that not only allows to retrieve argumentative information, bu
 This project takes advantage of the arguments previously extracted (from the citizen proposals of the Decide Madrid platform) in the <a  href="https://github.com/argrecsys/arg-miner" target="_blank">argrecsys/arg-miner</a> repository.
 
 ## Screenshots
-Argument-enhanced Information Retrieval Tool:
+**Argument-enhanced Information Retrieval** tool: allows the retrieval of argumentative information from textual content.
 
 ![arg-ir-gui-main](https://raw.githubusercontent.com/argrecsys/arg-enhanced-ir/main/images/gui-main.gif)
 
-Arguments Annotation Form:
+**Arguments Annotation** form: allows manual annotation and validation of arguments.
 
 ![arg-ir-gui-annotation](https://raw.githubusercontent.com/argrecsys/arg-enhanced-ir/main/images/gui-annotation.gif)
 
@@ -24,6 +24,7 @@ Below is an example of the generated <a href="https://github.com/argrecsys/arg-e
 
 | proposal_id | argument_id | relevance | quality | timestamp | username |
 | ----------- | ----------- | --------- | ------- | --------- | -------- |
+| 7 | 7-85675-1-1 | VERY_RELEVANT | SUFFICIENT | 10/3/2022 20:53:00 | andres.segura |
 | 1419 | 1419-30381-1-1 | RELEVANT | SUFFICIENT | 17/02/2022 23:04 | andres.segura |
 | 2576 | 2576-0-1-1 | VERY_RELEVANT | HIGH_QUALITY | 16/02/2022 17:31 | andres.segura |
 | 10996 | 10996-0-1-1 | VERY_RELEVANT | HIGH_QUALITY | 24/02/2022 20:12 | andres.segura |

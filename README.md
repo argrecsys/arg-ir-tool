@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
 ![version](https://img.shields.io/badge/version-1.0.0-blue)
-![last-update](https://img.shields.io/badge/last_update-3/11/2022-orange)
+![last-update](https://img.shields.io/badge/last_update-3/18/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 Argument-enhanced information retrieval project repository. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
@@ -29,6 +29,9 @@ Below is an example of the generated <a href="https://github.com/argrecsys/arg-e
 | 2576 | 2576-0-1-1 | VERY_RELEVANT | HIGH_QUALITY | 16/02/2022 17:31 | andres.segura |
 | 10996 | 10996-0-1-1 | VERY_RELEVANT | HIGH_QUALITY | 24/02/2022 20:12 | andres.segura |
 | 26787 | 26787-204339-1-1 | NOT_RELEVANT | LOW_QUALITY | 2022-03-09 16:39:43 | andres.segura |
+
+## Results
+As a preliminary offline evaluation, using the developed tool, we manually validated 20% of the arguments extracted by the simple syntactic pattern-based method. For the <em>topical relevance</em> metric, 8.6% of the arguments were labeled as <em>spam</em>, 36.9% as <em>not relevant</em>, 39.9% as <em>relevant</em>, and 14.6% as <em>very relevant</em>, whereas for the <em>rhetoric quality</em> metric, 42.3% of the arguments were of <em>low quality</em>, 40.6% of <em>sufficient quality</em>, and 17.1% of <em>high quality</em>. Although these results are modest, they can be considered acceptable as baseline values, taking into account they were obtained with a heuristic method that does not require training data and parameter tuning.
 
 ## Dependencies
 The implemented solutions depend on or make use of the following libraries and .jar files:

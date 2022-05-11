@@ -1,13 +1,16 @@
 # Arguments-enhanced IR
 ![version](https://img.shields.io/badge/version-1.0.0-blue)
-![last-update](https://img.shields.io/badge/last_update-3/18/2022-orange)
+![last-update](https://img.shields.io/badge/last_update-5/11/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
-Argument-enhanced information retrieval project repository. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
+ArgIR repository, a tool for annotation and retrieval of argumentative information from textual content. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
 
-We present a tool that not only allows to retrieve argumentative information, but also to validate the returned arguments (in the categories: relevant, valid and invalid) and to annotate new arguments. The search runs on Apache Lucene and the results (proposals and comments) are re-ranked according to the number of arguments they have.
+We present a tool that not only allows to retrieve argumentative information, but also to annotate new arguments and/or validate them (in terms of their *topical relevance* and *rhetorical quality*). The search runs on <a href="https://lucene.apache.org/" target="_blank">Apache Lucene</a> and the results (proposals and comments) are re-ranked according to their level of controversy or the number and quality of arguments they have.
 
 This project takes advantage of the arguments previously extracted (from the citizen proposals of the Decide Madrid platform) in the <a  href="https://github.com/argrecsys/arg-miner" target="_blank">argrecsys/arg-miner</a> repository.
+
+## Papers
+This work (v1.0) will be presented as a long paper at <a href="https://www.irit.fr/CIRCLE/">CIRCLE (Joint Conference of the Information Retrieval Communities in Europe) 2022</a>. CIRCLE 2022 will be hosted by the Université de Toulouse, France, 4-7th July 2022. A draft of the paper can be found <a href="https://github.com/argrecsys/arg-ir-tool/tree/main/papers/">here</a>.
 
 ## Screenshots
 **Argument-enhanced Information Retrieval** tool: allows the retrieval of argumentative information from textual content.
@@ -30,7 +33,7 @@ Below is an example of the generated <a href="https://github.com/argrecsys/arg-e
 | 10996 | 10996-0-1-1 | VERY_RELEVANT | HIGH_QUALITY | 24/02/2022 20:12 | andres.segura |
 | 26787 | 26787-204339-1-1 | NOT_RELEVANT | LOW_QUALITY | 2022-03-09 16:39:43 | andres.segura |
 
-## Results
+## Validation
 As a preliminary offline evaluation, using the developed tool, we manually validated 20% of the arguments extracted by the simple syntactic pattern-based method. For the <em>topical relevance</em> metric, 8.6% of the arguments were labeled as <em>spam</em>, 36.9% as <em>not relevant</em>, 39.9% as <em>relevant</em>, and 14.6% as <em>very relevant</em>, whereas for the <em>rhetoric quality</em> metric, 42.3% of the arguments were of <em>low quality</em>, 40.6% of <em>sufficient quality</em>, and 17.1% of <em>high quality</em>. Although these results are modest, they can be considered acceptable as baseline values, taking into account they were obtained with a heuristic method that does not require training data and parameter tuning.
 
 ## Dependencies

@@ -479,8 +479,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         String aboutMsg = """
                           Argument-enhanced Information Retrieval Tool
                           
-                          Version: 0.9.14
-                          Date: 03/08/2022
+                          Version: 1.0.0
+                          Date: 05/11/2022
                           Created by: Andr\u00e9s Segura-Tinoco & Iv\u00e1n Cantador
                           License: Apache License 2.0
                           Web site: https://argrecsys.github.io/arg-enhanced-ir 

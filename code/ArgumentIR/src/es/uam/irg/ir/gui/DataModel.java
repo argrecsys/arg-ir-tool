@@ -47,8 +47,6 @@ public class DataModel {
 
     // Class constants
     private static final String[] CSV_FILE_HEADER = {"proposal_id", "argument_id", "relevance", "quality", "timestamp", "username"};
-    private static final String LABELS_FILEPATH = "../../data/results/labels.csv";
-    private static final String LANG = "es";
     private static final int MAX_RECORDS_PER_PAGE = 10;
     private static final int MAX_TREE_LEVEL = 3;
 
@@ -56,6 +54,8 @@ public class DataModel {
     private final Map<String, List<Integer>> cache;
     private final String dateFormat;
     private final ReportFormatter formatter;
+    private final String labelsFilepath;
+    private final String lang;
     private final Map<String, Object> mdbSetup;
     private final Map<String, Object> msqlSetup;
 
@@ -75,15 +75,19 @@ public class DataModel {
     /**
      * Constructor.
      *
+     * @param lang
+     * @param dataPath
      * @param decimalFormat
      * @param dateFormat
      */
-    public DataModel(String decimalFormat, String dateFormat) {
+    public DataModel(String lang, String dataPath, String decimalFormat, String dateFormat) {
         this.cache = new HashMap<>();
+        this.lang = lang;
+        this.labelsFilepath = dataPath + "/results/labels.csv";
         this.dateFormat = dateFormat;
         this.formatter = new ReportFormatter(decimalFormat, dateFormat);
-        this.mdbSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MONGO_DB);
-        this.msqlSetup = FunctionUtils.getDatabaseConfiguration(FunctionUtils.MYSQL_DB);
+        this.mdbSetup = IOManager.getDatabaseConfiguration(IOManager.MONGO_DB);
+        this.msqlSetup = IOManager.getDatabaseConfiguration(IOManager.MYSQL_DB);
         this.isDirty = false;
         this.nRows = 0;
 
@@ -249,7 +253,7 @@ public class DataModel {
      * @return
      */
     public boolean saveLabelsToFile(String userName) {
-        boolean result = IOManager.saveDictToCsvFile(LABELS_FILEPATH, CSV_FILE_HEADER, proposalLabels, userName, true);
+        boolean result = IOManager.saveDictToCsvFile(labelsFilepath, CSV_FILE_HEADER, proposalLabels, userName, true);
         isDirty = !result;
         return result;
     }
@@ -408,7 +412,7 @@ public class DataModel {
      */
     private void loadLabels() {
         FunctionUtils.printWithDatestamp(">> Loading argument labels");
-        proposalLabels = IOManager.readDictFromCsvFile(LABELS_FILEPATH);
+        proposalLabels = IOManager.readDictFromCsvFile(labelsFilepath);
         FunctionUtils.printWithDatestamp(" - Number of argument labels: " + proposalLabels.size());
     }
 
@@ -416,7 +420,7 @@ public class DataModel {
      *
      */
     private void loadRelationTaxonomy() {
-        this.taxonomy = IOManager.readRelationTaxonomy(LANG);
+        this.taxonomy = IOManager.readRelationTaxonomy(lang);
 
         System.out.println(">> Taxonomy:");
         for (String category : taxonomy.keySet()) {

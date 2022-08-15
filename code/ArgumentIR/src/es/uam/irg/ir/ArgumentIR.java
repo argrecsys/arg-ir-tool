@@ -19,6 +19,7 @@ package es.uam.irg.ir;
 
 import es.uam.irg.ir.gui.ArgumentIRForm;
 import es.uam.irg.utils.FunctionUtils;
+import java.util.Map;
 
 /**
  * Program main class.
@@ -30,13 +31,24 @@ public class ArgumentIR {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        showWinform();
+
+        // Program hyperparameters from JSON config file
+        Map<String, Object> params = InitParams.readInitParams();
+        String language = (String) params.get("language");
+        String dataPath = (String) params.get("data_path");
+        System.out.format(">> Language: %s, Data folder path: %s\n", language, dataPath);
+
+        // Show tool gui
+        showWinform(language, dataPath);
     }
 
     /**
      * Creates and displays the Argument-IR form.
+     *
+     * @param language
+     * @param datapath
      */
-    private static void showWinform() {
+    private static void showWinform(String language, String dataPath) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -51,7 +63,7 @@ public class ArgumentIR {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
             FunctionUtils.printWithDatestamp(">> ARG-IR BEGINS");
-            new ArgumentIRForm();
+            new ArgumentIRForm(language, dataPath);
             FunctionUtils.printWithDatestamp(">> ARG-IR ENDS");
         });
     }

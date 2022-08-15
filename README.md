@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
-![version](https://img.shields.io/badge/version-1.0.0-blue)
-![last-update](https://img.shields.io/badge/last_update-5/11/2022-orange)
+![version](https://img.shields.io/badge/version-1.1.0-blue)
+![last-update](https://img.shields.io/badge/last_update-8/15/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 ArgIR repository, a tool for annotation and retrieval of argumentative information from textual content. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
@@ -44,6 +44,7 @@ The implemented solutions depend on or make use of the following libraries and .
 - <a href="https://mongodb.github.io/mongo-java-driver/" target="_blank">MongoDB Java Driver</a> 3.12.10
 - Snake YAML 1.9
 - JSON Java 20210307
+- OpenCSV 4.1
 
 ## Authors
 Created on Jan 25, 2022  

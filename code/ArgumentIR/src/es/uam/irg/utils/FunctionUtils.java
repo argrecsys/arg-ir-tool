@@ -17,12 +17,7 @@
  */
 package es.uam.irg.utils;
 
-//import es.uam.irg.io.IOManager;
-import es.uam.irg.io.IOManager;
 import java.awt.Color;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,23 +27,17 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Class with a set of static utility functions.
  */
 public class FunctionUtils {
 
-    // Class constants
-    public static final String MONGO_DB = "MONGO_DB";
-    public static final String MYSQL_DB = "MYSQL_DB";
-    private static final String MDB_SETUP_FILEPATH = "Resources/config/mdb_setup.yaml";
-    private static final String MSQL_SETUP_FILEPATH = "Resources/config/msql_setup.yaml";
-
     // Class variables
-    private static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     /**
      *
@@ -88,46 +77,6 @@ public class FunctionUtils {
 
     /**
      *
-     * @param array
-     * @return
-     */
-    public static List<String> createListFromText(String array) {
-        array = array.replace("[", "").replace("]", "");
-        return new ArrayList<>(Arrays.asList(array.split(",")));
-    }
-
-    /**
-     *
-     * @param dbType
-     * @return
-     */
-    public static Map<String, Object> getDatabaseConfiguration(String dbType) {
-        Map<String, Object> setup = null;
-
-        if (dbType.equals(MYSQL_DB)) {
-            setup = IOManager.readYamlFile(MSQL_SETUP_FILEPATH);
-        } else if (dbType.equals(MONGO_DB)) {
-            setup = IOManager.readYamlFile(MDB_SETUP_FILEPATH);
-        }
-
-        return setup;
-    }
-
-    /**
-     *
-     * @param filename
-     * @return
-     */
-    public static String getFilenameWithoutExt(String filename) {
-        int index = filename.lastIndexOf(".");
-        if (index == -1) {
-            return filename;
-        }
-        return filename.substring(0, index);
-    }
-
-    /**
-     *
      * @param <T>
      * @param array
      * @param startIx
@@ -147,13 +96,55 @@ public class FunctionUtils {
 
     /**
      *
+     * @param strNum
+     * @return
+     */
+    public static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            Double.parseDouble(strNum);
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param json
+     * @param id
+     * @return
+     */
+    public static boolean jsonContainsKey(JSONObject json, String id) {
+        boolean result = false;
+        try {
+            json.getString(id);
+            result = true;
+        } catch (JSONException ex) {
+
+        }
+        return result;
+    }
+
+    /**
+     *
+     * @param array
+     * @return
+     */
+    public static List<String> listFromText(String array) {
+        array = array.replace("[", "").replace("]", "");
+        return new ArrayList<>(Arrays.asList(array.split(",")));
+    }
+
+    /**
+     *
      * @param msg
      */
     public static void printWithDatestamp(String msg) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                System.out.println(msg + " - " + dateFormat.format(new Date()));
-            }
+        SwingUtilities.invokeLater(() -> {
+            System.out.println(msg + " - " + dateFormat.format(new Date()));
         });
     }
 
@@ -189,25 +180,6 @@ public class FunctionUtils {
                 .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
 
         return reverseSortedMap;
-    }
-
-    /**
-     *
-     * @param filepath
-     * @param content
-     * @return
-     */
-    public static boolean writeStringToFile(String filepath, String content) {
-        boolean result = false;
-        try {
-            if (!filepath.isEmpty() && !content.isEmpty()) {
-                Files.write(Paths.get(filepath), content.getBytes());
-                result = true;
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(FunctionUtils.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
     }
 
 }

@@ -6,6 +6,15 @@ We present a tool that not only allows to retrieve argumentative information, bu
 
 This project takes advantage of the arguments previously extracted (from the citizen proposals of the Decide Madrid platform) in the <a  href="https://github.com/argrecsys/arg-miner" target="_blank">argrecsys/arg-miner</a> repository.
 
+## Configuration
+The input parameters (<a href="https://github.com/argrecsys/arg-ir-tool/blob/main/code/ArgumentIR/Resources/config/params.json">params.json</a> file) of the tool are:
+```json
+{
+    "language": "es",
+    "data_path": "../../data"
+}
+```
+
 ## Authors
 Created on Jan 25, 2022  
 Created by:

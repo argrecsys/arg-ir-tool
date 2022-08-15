@@ -18,7 +18,7 @@
 package es.uam.irg.ir.gui;
 
 import es.uam.irg.io.IOManager;
-import es.uam.irg.utils.FunctionUtils;
+import es.uam.irg.utils.FileUtils;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -47,12 +47,15 @@ public class ArgumentIRForm extends javax.swing.JFrame {
     private final String userName;
 
     /**
-     * Creates new form ArgumentIRForm
+     * Creates new form ArgumentIRForm.
+     *
+     * @param language
+     * @param dataPath
      */
-    public ArgumentIRForm() {
+    public ArgumentIRForm(String language, String dataPath) {
         initComponents();
         this.doEvents = false;
-        this.model = new DataModel(DECIMAL_FORMAT, DATE_FORMAT);
+        this.model = new DataModel(language, dataPath, DECIMAL_FORMAT, DATE_FORMAT);
         this.setVisible(true);
         this.userName = getAnnotatorName();
         this.lblAnnotator.setText("Annotator: " + userName);
@@ -81,7 +84,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
             String filepath = selectFileToExport(type);
             String header = getReportHeader(type);
             String text = header + (type.equals("html") ? this.txtResult.getText() : this.txtResult.getDocument().getText(0, this.txtResult.getDocument().getLength()));
-            FunctionUtils.writeStringToFile(filepath, text);
+            FileUtils.saveFile(filepath, text);
 
         } catch (BadLocationException ex) {
             Logger.getLogger(ArgumentIRForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -479,8 +482,8 @@ public class ArgumentIRForm extends javax.swing.JFrame {
         String aboutMsg = """
                           Argument-enhanced Information Retrieval Tool
                           
-                          Version: 1.0.0
-                          Date: 05/11/2022
+                          Version: 1.1.0
+                          Date: 08/15/2022
                           Created by: Andr\u00e9s Segura-Tinoco & Iv\u00e1n Cantador
                           License: Apache License 2.0
                           Web site: https://argrecsys.github.io/arg-enhanced-ir 

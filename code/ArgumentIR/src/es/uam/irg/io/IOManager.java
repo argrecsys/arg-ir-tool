@@ -18,18 +18,14 @@
 package es.uam.irg.io;
 
 import es.uam.irg.nlp.am.arguments.ArgumentLabel;
-import es.uam.irg.utils.FunctionUtils;
+import es.uam.irg.utils.FileUtils;
 import es.uam.irg.utils.StringUtils;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -39,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Input-output manager class.
@@ -47,7 +42,28 @@ import org.yaml.snakeyaml.Yaml;
 public class IOManager {
 
     // Class constants
+    public static final String MONGO_DB = "MONGO_DB";
+    public static final String MYSQL_DB = "MYSQL_DB";
     private static final String LEXICON_FILEPATH = "Resources/data/argument_lexicon_{}.csv";
+    private static final String MDB_SETUP_FILEPATH = "Resources/config/mdb_setup.yaml";
+    private static final String MSQL_SETUP_FILEPATH = "Resources/config/msql_setup.yaml";
+
+    /**
+     *
+     * @param dbType
+     * @return
+     */
+    public static Map<String, Object> getDatabaseConfiguration(String dbType) {
+        Map<String, Object> setup = null;
+
+        if (dbType.equals(MYSQL_DB)) {
+            setup = FileUtils.readYamlFile(MSQL_SETUP_FILEPATH);
+        } else if (dbType.equals(MONGO_DB)) {
+            setup = FileUtils.readYamlFile(MDB_SETUP_FILEPATH);
+        }
+
+        return setup;
+    }
 
     /**
      *
@@ -133,7 +149,7 @@ public class IOManager {
                 if (fileEntry.isFile()) {
                     Path filepath = Paths.get(fileEntry.getPath());
                     String filename = getFileName(fileEntry.getName());
-                    String content = readFile(filepath);
+                    String content = FileUtils.readFile(filepath);
                     reports.put(filename, content);
                 }
             }
@@ -191,32 +207,6 @@ public class IOManager {
     /**
      *
      * @param filepath
-     * @return
-     */
-    public static Map<String, Object> readYamlFile(String filepath) {
-        Map<String, Object> data = null;
-
-        try {
-            // Get the file
-            File yamlFile = new File(filepath);
-
-            // Check if the specified file exists or not
-            if (yamlFile.exists()) {
-                InputStream inputStream = new FileInputStream(yamlFile);
-                Yaml yaml = new Yaml();
-                data = (Map<String, Object>) yaml.load(inputStream);
-            }
-
-        } catch (IOException ex) {
-            Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return data;
-    }
-
-    /**
-     *
-     * @param filepath
      * @param header
      * @param csvData
      * @param userName
@@ -225,18 +215,14 @@ public class IOManager {
      */
     public static boolean saveDictToCsvFile(String filepath, String[] header, Map<String, ArgumentLabel> csvData, String userName, boolean sorted) {
         boolean result = false;
-
         if (csvData.size() > 0) {
-
             // Sorting data
             if (sorted) {
                 csvData = sortLabelData(csvData);
             }
-
             // Add data
             StringBuilder sb = new StringBuilder();
             sb.append(String.join(",", header)).append("\n");
-
             csvData.entrySet().forEach(entry -> {
                 ArgumentLabel label = entry.getValue();
                 sb.append(label.toString())
@@ -244,17 +230,14 @@ public class IOManager {
                         .append(userName)
                         .append("\n");
             });
-
             // Save data
             try ( PrintWriter out = new PrintWriter(filepath)) {
                 out.println(sb.toString());
                 result = true;
-
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
         return result;
     }
 
@@ -264,23 +247,8 @@ public class IOManager {
      * @return
      */
     private static String getFileName(String filename) {
-        filename = FunctionUtils.getFilenameWithoutExt(filename);
+        filename = FileUtils.getFilenameWithoutExt(filename);
         return filename.replace("-", "_").toUpperCase();
-    }
-
-    /**
-     *
-     * @param filepath
-     * @return
-     */
-    private static String readFile(Path filepath) {
-        String content = "";
-        try {
-            content = Files.readString(filepath, StandardCharsets.US_ASCII);
-        } catch (IOException ex) {
-            Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return content;
     }
 
     /**

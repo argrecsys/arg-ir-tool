@@ -48,8 +48,8 @@ public class Sentence {
 
     public Sentence(Document doc) {
         this.text = doc.getString("text");
-        this.nouns = FunctionUtils.createListFromText(doc.getString("nouns"));
-        this.entities = FunctionUtils.createListFromText(doc.getString("entities"));
+        this.nouns = FunctionUtils.listFromText(doc.getString("nouns"));
+        this.entities = FunctionUtils.listFromText(doc.getString("entities"));
     }
 
     public Document getDocument() {

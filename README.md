@@ -46,6 +46,14 @@ The implemented solutions depend on or make use of the following libraries and .
 - JSON Java 20210307
 - OpenCSV 4.1
 
+## Execution and Use
+The project has an executable package in the `\jar` folder, called `ArgumentIR.jar`. To run the tool from the Command Prompt (CMD), execute the following commands:
+
+``` console
+  cd "arg-ir-tool\jar\"
+  java -jar ArgumentIR.jar
+```
+
 ## Authors
 Created on Jan 25, 2022  
 Created by:

@@ -253,7 +253,7 @@ public class DataModel {
      * @return
      */
     public boolean saveLabelsToFile(String userName) {
-        boolean result = IOManager.saveDictToCsvFile(labelsFilepath, CSV_FILE_HEADER, proposalLabels, userName, true);
+        boolean result = IOManager.saveArgumentLabelList(labelsFilepath, CSV_FILE_HEADER, proposalLabels, userName, true);
         isDirty = !result;
         return result;
     }
@@ -412,7 +412,7 @@ public class DataModel {
      */
     private void loadLabels() {
         FunctionUtils.printWithDatestamp(">> Loading argument labels");
-        proposalLabels = IOManager.readDictFromCsvFile(labelsFilepath);
+        proposalLabels = IOManager.readArgumentLabelList(labelsFilepath);
         FunctionUtils.printWithDatestamp(" - Number of argument labels: " + proposalLabels.size());
     }
 

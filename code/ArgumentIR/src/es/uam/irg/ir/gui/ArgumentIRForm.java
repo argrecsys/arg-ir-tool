@@ -96,7 +96,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      * @return
      */
     private String[] getAnnotatorList() {
-        List<String> annotators = IOManager.readAnnotators(USERS_FILEPATH);
+        List<String> annotators = IOManager.readUsers(USERS_FILEPATH);
         return annotators.toArray(new String[0]);
     }
 

@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
 ![version](https://img.shields.io/badge/version-1.1.0-blue)
-![last-update](https://img.shields.io/badge/last_update-8/15/2022-orange)
+![last-update](https://img.shields.io/badge/last_update-8/16/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 ArgIR repository, a tool for annotation and retrieval of argumentative information from textual content. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.

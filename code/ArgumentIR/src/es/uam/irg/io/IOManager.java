@@ -22,10 +22,8 @@ import es.uam.irg.utils.FileUtils;
 import es.uam.irg.utils.StringUtils;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -70,66 +68,21 @@ public class IOManager {
      * @param filepath
      * @return
      */
-    public static List<String> readAnnotators(String filepath) {
-        List<String> annotators = new ArrayList<>();
-
-        try {
-            File txtFile = new File(filepath);
-
-            if (txtFile.exists() && txtFile.isFile()) {
-                try ( BufferedReader reader = new BufferedReader(new FileReader(txtFile))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        annotators.add(line.trim());
-                    }
-                }
-            }
-
-        } catch (IOException ex) {
-            Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return annotators;
-    }
-
-    /**
-     *
-     * @param filepath
-     * @return
-     */
-    public static Map<String, ArgumentLabel> readDictFromCsvFile(String filepath) {
+    public static Map<String, ArgumentLabel> readArgumentLabelList(String filepath) {
         Map<String, ArgumentLabel> csvData = new HashMap<>();
+        List<String[]> data = FileUtils.readCsvFile(filepath, false);
 
-        try {
-            File csvFile = new File(filepath);
-
-            if (csvFile.exists() && csvFile.isFile()) {
-                try ( BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
-                    String row;
-                    ArgumentLabel label;
-                    String id;
-                    String relevance;
-                    String quality;
-                    String timestamp;
-
-                    reader.readLine();
-                    while ((row = reader.readLine()) != null) {
-                        String[] data = row.split(",");
-
-                        if (data.length == 6) {
-                            id = data[1];
-                            relevance = data[2];
-                            quality = data[3];
-                            timestamp = data[4];
-                            label = new ArgumentLabel(id, relevance, quality, timestamp);
-                            csvData.put(id, label);
-                        }
-                    }
+        if (data.size() > 0) {
+            for (String[] row : data) {
+                if (row.length == 6) {
+                    String id = row[1];
+                    String relevance = row[2];
+                    String quality = row[3];
+                    String timestamp = row[4];
+                    ArgumentLabel label = new ArgumentLabel(id, relevance, quality, timestamp);
+                    csvData.put(id, label);
                 }
             }
-
-        } catch (IOException ex) {
-            Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return csvData;
@@ -207,37 +160,59 @@ public class IOManager {
     /**
      *
      * @param filepath
+     * @return
+     */
+    public static List<String> readUsers(String filepath) {
+        List<String> users = new ArrayList<>();
+
+        // Get the file
+        String content = FileUtils.readFile(filepath);
+
+        // Check if the specified file exists or not
+        if (!StringUtils.isEmpty(content)) {
+            String[] rows = content.split("\n");
+            for (String user : rows) {
+                users.add(user.replace("\r", ""));
+            }
+        }
+
+        return users;
+    }
+
+    /**
+     *
+     * @param filepath
      * @param header
      * @param csvData
      * @param userName
      * @param sorted
      * @return
      */
-    public static boolean saveDictToCsvFile(String filepath, String[] header, Map<String, ArgumentLabel> csvData, String userName, boolean sorted) {
+    public static boolean saveArgumentLabelList(String filepath, String[] header, Map<String, ArgumentLabel> csvData, String userName, boolean sorted) {
         boolean result = false;
+
         if (csvData.size() > 0) {
+
             // Sorting data
             if (sorted) {
                 csvData = sortLabelData(csvData);
             }
-            // Add data
-            StringBuilder sb = new StringBuilder();
-            sb.append(String.join(",", header)).append("\n");
+
+            // Collect data
+            List<String[]> data = new ArrayList<>();
+            data.add(header);
+
             csvData.entrySet().forEach(entry -> {
                 ArgumentLabel label = entry.getValue();
-                sb.append(label.toString())
-                        .append(",")
-                        .append(userName)
-                        .append("\n");
+                String s = label.toString() + "," + userName;
+                String[] row = s.split(",");
+                data.add(row);
             });
+
             // Save data
-            try ( PrintWriter out = new PrintWriter(filepath)) {
-                out.println(sb.toString());
-                result = true;
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(IOManager.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            result = FileUtils.saveCsvFile(filepath, data);
         }
+
         return result;
     }
 

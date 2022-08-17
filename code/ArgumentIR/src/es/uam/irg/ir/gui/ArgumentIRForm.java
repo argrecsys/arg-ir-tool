@@ -105,15 +105,15 @@ public class ArgumentIRForm extends javax.swing.JFrame {
      * @return
      */
     private String getAnnotatorName() {
-        String userName = "admin";
+        String user = "admin";
         String[] annotators = getAnnotatorList();
         String result = (String) JOptionPane.showInputDialog(this, "Please, enter annotator name:", "Annotator Name", JOptionPane.PLAIN_MESSAGE, null, annotators, "");
 
         if (result != null && result.length() > 0) {
-            userName = result;
+            user = result;
         }
 
-        return userName;
+        return user;
     }
 
     /**
@@ -483,7 +483,7 @@ public class ArgumentIRForm extends javax.swing.JFrame {
                           Argument-enhanced Information Retrieval Tool
                           
                           Version: 1.1.0
-                          Date: 08/15/2022
+                          Date: 08/17/2022
                           Created by: Andr\u00e9s Segura-Tinoco & Iv\u00e1n Cantador
                           License: Apache License 2.0
                           Web site: https://argrecsys.github.io/arg-enhanced-ir 

@@ -57,7 +57,7 @@ public class ReportFormatter {
     public ReportFormatter(String decimalFormat, String dateFormat) {
         this.df = new DecimalFormat(decimalFormat);
         this.dtf = DateTimeFormatter.ofPattern(dateFormat);
-        this.imgPath = getClass().getClassLoader().getResource("views/img/edit.png").getFile();
+        this.imgPath = REPORTS_PATH + "img/edit.png";
         loadReports();
     }
 

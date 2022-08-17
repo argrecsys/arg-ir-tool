@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
 ![version](https://img.shields.io/badge/version-1.1.0-blue)
-![last-update](https://img.shields.io/badge/last_update-8/16/2022-orange)
+![last-update](https://img.shields.io/badge/last_update-8/17/2022-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 ArgIR repository, a tool for annotation and retrieval of argumentative information from textual content. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
@@ -10,7 +10,7 @@ We present a tool that not only allows to retrieve argumentative information, bu
 This project takes advantage of the arguments previously extracted (from the citizen proposals of the Decide Madrid platform) in the <a  href="https://github.com/argrecsys/arg-miner" target="_blank">argrecsys/arg-miner</a> repository.
 
 ## Papers
-This work (v1.0) will be presented as a long paper at <a href="https://www.irit.fr/CIRCLE/">CIRCLE (Joint Conference of the Information Retrieval Communities in Europe) 2022</a>. CIRCLE 2022 will be hosted by the Université de Toulouse, France, 4-7th July 2022. A draft of the paper can be found <a href="https://github.com/argrecsys/arg-ir-tool/tree/main/papers/">here</a>.
+This work (v1.0) was presented as a long paper at <a href="https://www.irit.fr/CIRCLE/">CIRCLE (Joint Conference of the Information Retrieval Communities in Europe) 2022</a>. CIRCLE 2022 was hosted by the Université de Toulouse, France, 4-7th July 2022. The paper can be found <a href="https://github.com/argrecsys/arg-ir-tool/tree/main/papers/">here</a>.
 
 ## Screenshots
 **Argument-enhanced Information Retrieval** tool: allows the retrieval of argumentative information from textual content.

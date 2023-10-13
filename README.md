@@ -1,6 +1,6 @@
 # Arguments-enhanced IR
 ![version](https://img.shields.io/badge/version-1.1.0-blue)
-![last-update](https://img.shields.io/badge/last_update-8/17/2022-orange)
+![last-update](https://img.shields.io/badge/last_update-10/13/2023-orange)
 ![license](https://img.shields.io/badge/license-Apache_2.0-brightgreen)
 
 ArgIR repository, a tool for annotation and retrieval of argumentative information from textual content. A case study in the <a href="https://decide.madrid.es" target="_blank">Decide Madrid</a> database.
@@ -53,6 +53,9 @@ The project has an executable package in the `\jar` folder, called `ArgumentIR.j
   cd "arg-ir-tool\jar\"
   java -jar ArgumentIR.jar
 ```
+
+# Documentation
+Please read the [contributing](https://github.com/argrecsys/arg-ir-tool/blob/main/docs/CONTRIBUTING.md) and [code of conduct](https://github.com/argrecsys/arg-ir-tool/blob/main/docs/CODE_OF_CONDUCT.md) documentation.
 
 ## Authors
 Created on Jan 25, 2022  

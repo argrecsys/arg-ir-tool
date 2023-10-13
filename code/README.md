@@ -15,6 +15,9 @@ The input parameters (<a href="https://github.com/argrecsys/arg-ir-tool/blob/mai
 }
 ```
 
+## Documentation
+Please read the [contributing](https://github.com/argrecsys/arg-ir-tool/blob/main/docs/CONTRIBUTING.md) and [code of conduct](https://github.com/argrecsys/arg-ir-tool/blob/main/docs/CODE_OF_CONDUCT.md) documentation.
+
 ## Authors
 Created on Jan 25, 2022  
 Created by:

@@ -49,7 +49,7 @@ The implemented solutions depend on or make use of the following libraries and .
 ## Execution and Use
 The project has an executable package in the `\jar` folder, called `ArgumentIR.jar`. To run the tool from the Command Prompt (CMD), execute the following commands:
 
-``` console
+``` shell
   cd "arg-ir-tool\jar\"
   java -jar ArgumentIR.jar
 ```

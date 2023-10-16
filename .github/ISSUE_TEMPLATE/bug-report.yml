@@ -10,7 +10,7 @@ body:
     id: version
     attributes:
       label: Version
-      description: Which version of the arg-ir-tool is?
+      description: Which version of the ArgIR toolis?
     validations:
       required: true
   - type: textarea
